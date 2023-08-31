@@ -1082,7 +1082,7 @@ sudo ln -sf /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-enabled
 &nbsp;<br />
 Abra a página https://localhost/phpinfo no navegador. Role a tela até aparecer as configurações do XDEBUG desta forma:
 
-![phpinfo-xdebug](./img/firefox-phpinfo-xdebug-1024x512.png)
+![phpinfo-xdebug](./img/firefox-phpinfo-xdebug.png)
 
 Procure pela string "VSCODE" nesta página. Ela precisa estar presente.
 
@@ -1155,7 +1155,7 @@ Quando o VSCODE reconhecer o XDEBUG a opção **Listen for Xdebug** ficará ativ
 &nbsp;<br />
 Está quase tudo pronto, agora basta teclar F5 (Start Debugging) no VSCODE para iniciar a escuta, quando isso ocorrer, uma barra azul aparecerá no rodapé do VSCODE:
 
-![alt](./img/vscode-listen-ativado.png)
+![alt](./img/vscode-listen-activated.png)
 
 &nbsp;<br />
 Tudo pronto! Para iniciar a depuração, basta setar um breakpoint na linha desejada (F9) e recarregar a página no navegador:
