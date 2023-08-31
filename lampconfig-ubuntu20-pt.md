@@ -339,7 +339,7 @@ cd /usr/local/mysql5.7 && sudo touch my.cnf && sudo chmod 644 my.cnf && sudo edi
 &nbsp;<br />
 Insira algumas configurações, por exemplo, estas linhas abaixo:
 
-```console
+```
 [mysqld]
 collation-server = utf8_general_ci
 character-set-server = utf8
@@ -398,7 +398,7 @@ systemctl status php7.4-fpm.service
 
 &nbsp;<br />
 Caso o serviço esteja OK, você deverá ver uma mensagem assim:
-```console
+```
 ● php7.4-fpm.service - The PHP 7.4 FastCGI Process Manager
      Loaded: loaded (/lib/systemd/system/php7.4-fpm.service; enabled; vendor preset: enabled)
      Active: active (running) since Fri 2023-08-25 16:36:33 -03; 23s ago
@@ -420,7 +420,7 @@ Edite o arquivo de configuração do serviço e faça alterações em alguns par
 sudo editor /etc/php/7.4/fpm/php.ini
 ```
 
-```console
+```
 Linha 0388: max_execution_time = 600
 Linha 0405: max_input_vars = 10000
 Linha 0409: memory_limit = 256M
@@ -488,7 +488,7 @@ systemctl status php8.0-fpm.service
 
 &nbsp;<br />
 Caso o serviço esteja OK, você deverá ver uma mensagem assim:
-```console
+```
 ● php8.0-fpm.service - The PHP 8.0 FastCGI Process Manager
      Loaded: loaded (/lib/systemd/system/php8.0-fpm.service; enabled; vendor preset: enabled)
      Active: active (running) since Fri 2023-08-25 17:15:03 -03; 39s ago
@@ -509,7 +509,7 @@ Edite o arquivo de configuração do serviço e faça alterações em alguns par
 ```console
 sudo editor /etc/php/8.0/fpm/php.ini
 ```
-```console
+```
 Linha 0409: max_execution_time = 600
 Linha 0426: max_input_vars = 10000
 Linha 0430: memory_limit = 256M
@@ -588,7 +588,7 @@ curl -s -I localhost
 ```
 O comando acima deverá retornar uma mensagem assim
 
-```console
+```
 HTTP/1.1 200 OK
 Date: Fri, 25 Aug 2023 20:34:19 GMT
 Server: Apache/2.4.41 (Ubuntu)
@@ -607,7 +607,7 @@ sudo editor /etc/apache2/apache2.conf
 ```
 
 Linha 170: Edite a diretiva que começa com `<Directory \/var\/www...>` e faça ela ficar assim:
-```console
+```
 <Directory /home/ma/Documents/public_html/>
         Options Indexes FollowSymLinks
         AllowOverride None
@@ -657,7 +657,7 @@ sudo editor /etc/apache2/sites-available/localhost.conf
 
 &nbsp;<br />
 Adicione este conteúdo ao arquivo e salve-o:
-```console
+```
 <VirtualHost *:80>
 	ServerName localhost
 	DocumentRoot /home/ma/Documents/public_html/localhost
@@ -688,7 +688,7 @@ curl -Lks http://localhost | egrep -i ".+Apache.+works.+"
 
 &nbsp;<br />
 A mensagem de retorno deverá um trecho do html da página:
-```console
+```
 <title>Apache2 Ubuntu Default Page: It works</title>
 ```
 
@@ -704,7 +704,7 @@ sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/priva
 &nbsp;<br />
 Ao executar o comando acima, serão solicitadas algumas informações, como Country, State, etc. A **única informação realmente importante** é "Common Name (e.g. server FQDN or YOUR name)". Aqui você deve digitar EXATAMENTE o dominio para o qual deseja habilitar o certificado, neste caso **localhost**.
 Sugestão de preenchimento:
-```console
+```
 Country Name (2 letter code) [AU]: BR
 State or Province Name (full name) [Some-State]: SP
 Locality Name (eg, city) []: SP
@@ -728,7 +728,7 @@ sudo editor /etc/apache2/sites-available/localhost.conf
 
 &nbsp;<br />
 Troque o conteúdo do arquivo por este aqui:
-```console
+```
 <VirtualHost *:80>
 	ServerName localhost
 	Redirect permanent / https://localhost/
@@ -787,7 +787,7 @@ sudo editor /etc/apache2/sites-available/localhost_php7.4.conf
 ```
 Insira o seguinte conteúdo:
 
-```console
+```
 <VirtualHost *:80>
 	ServerName localhost
 	Redirect permanent / https://localhost/
@@ -854,7 +854,7 @@ Teste se o servidor web está no ar:
 curl -s -I localhost
 ```
 O retorno do comando acima deverá ser parecido com este:
-```console
+```
 HTTP/1.1 200 OK
 Server: nginx/1.18.0 (Ubuntu)
 Date: Sat, 26 Aug 2023 01:50:12 GMT
@@ -869,7 +869,7 @@ Accept-Ranges: bytes
 &nbsp;<br />
 Edite o arquivo /etc/nginx/nginx.conf
 Insira as linhas abaixo dentro da diretiva "http {...}"
-```console
+```
 # evitar erro 504 ao depurar php
 fastcgi_connect_timeout 75;
 fastcgi_send_timeout 600;
@@ -882,7 +882,7 @@ Crie os arquivos de configuração para o domínio localhost
 sudo editor /etc/nginx/sites-available/localhost_php7.4
 ```
 Insira o seguinte conteúdo:
-```console
+```
 server {
     listen 80;
     server_name localhost;
@@ -945,7 +945,7 @@ Crie um snippet para comportar o atalho para os arquivos do certificado.
 sudo editor /etc/nginx/snippets/localhost-certs.conf
 ```
 Insira este conteúdo:
-```console
+```
 ssl_certificate /etc/ssl/certs/localhost-selfsigned.crt;
 ssl_certificate_key /etc/ssl/private/localhost-selfsigned.key;
 ```
@@ -957,7 +957,7 @@ Crie um snippet para o arquivo DIFFIE-HELLMAN
 sudo editor /etc/nginx/snippets/ssl-params.conf
 ```
 Insira o conteúdo abaixo:
-```console
+```
 ssl_protocols TLSv1.3;
 ssl_prefer_server_ciphers on;
 ssl_dhparam /etc/nginx/dhparam.pem;
@@ -981,7 +981,7 @@ Atualize os arquivos de configuração do dominio localhost, inserindo as config
 sudo editor /etc/nginx/sites-available/localhost_php7.4
 ```
 O conteúdo do arquivo passa ser este:
-```console
+```
 server {
 	server_name localhost;
 	listen 127.0.0.1:443 ssl;
@@ -1050,7 +1050,7 @@ Edite o arquivo de configurações do XDEBUG para as versões 7 e 8 do PHP
 sudo editor /etc/php/7.4/mods-available/xdebug.ini
 ```
 O arquivo deverá ficar com este conteúdo:
-```console
+```
 zend_extension=xdebug.so
 xdebug.mode=debug
 xdebug.start_with_request=yes
@@ -1118,7 +1118,7 @@ Depois clique em **Edit in settings.json**
 
 &nbsp;<br />
 Insira as configurações abaixo e salve o arquivo
-```console
+```
 {
     "workbench.colorTheme": "Default Dark Modern",
     "php.debug.executablePath": "/usr/bin/php",
@@ -1199,7 +1199,7 @@ Para subir uma nova configuração use este comando:
 /home/ma/Documents/lampconfig.sh "APACHE PHP7.4 MYSQL5.7"
 ```
 As opções são:
-```console
+```
 "APACHE PHP7.4 MYSQL5.7"
 "APACHE PHP7.4 MYSQL8.0"
 "APACHE PHP8.0 MYSQL5.7"
@@ -1222,7 +1222,7 @@ sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/priva
 ```
 &nbsp;<br />
 Ao executar o comando acima, serão solicitadas algumas informações, como Country, State, etc. A **única informação realmente importante** é "Common Name (e.g. server FQDN or YOUR name)". Aqui você deve digitar EXATAMENTE o dominio para o qual deseja habilitar o certificado, neste caso **teste.dev.br**. Sugestão de preenchimento:
-```console
+```
 Country Name (2 letter code) [AU]: BR
 State or Province Name (full name) [Some-State]: SP
 Locality Name (eg, city) []: SP
@@ -1252,7 +1252,7 @@ sudo editor /etc/apache2/sites-available/teste.dev.br_php7.4.conf
 ```
 Insira o seguinte conteúdo:
 
-```console
+```
 <VirtualHost *:80>
 	ServerName teste.dev.br
 	Redirect permanent / https://teste.dev.br/
@@ -1288,7 +1288,7 @@ Crie um snippet para comportar o atalho para os arquivos do certificado.
 sudo editor /etc/nginx/snippets/teste.dev.br-certs.conf
 ```
 Insira este conteúdo:
-```console
+```
 ssl_certificate /etc/ssl/certs/teste.dev.br-selfsigned.crt;
 ssl_certificate_key /etc/ssl/private/teste.dev.br-selfsigned.key;
 ```
@@ -1299,7 +1299,7 @@ Atualize os arquivos de configuração do dominio teste.dev.br:
 sudo editor /etc/nginx/sites-available/teste.dev.br_php7.4
 ```
 Insira este conteúdo:
-```console
+```
 server {
 	server_name teste.dev.br;
 	listen 127.0.0.1:443 ssl;
@@ -1340,7 +1340,7 @@ Edite o arquivo /etc/hosts e insira o novo dominio apontando para 127.0.0.1
 sudo editor /etc/hosts
 ```
 Insira esta linha::
-```console
+```
 127.0.0.1	teste.dev.br
 ```
 
