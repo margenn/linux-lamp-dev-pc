@@ -1,6 +1,6 @@
 ## LINUX UBUNTU 20.04 LAMP/LEMP DEV SERVER
 
-### Como configurar uma máquina de desenvolvimento [LAMP](https://en.wikipedia.org/wiki/LAMP_%28software_bundle%29)/[LEMP](https://lemp.io/) no Ubuntu 20.04 com:
+### Passo a Passo: Como configurar um ambiente de desenvolvimento [LAMP](https://en.wikipedia.org/wiki/LAMP_%28software_bundle%29)/[LEMP](https://lemp.io/) no Ubuntu 20.04 com:
 
 - MYSQL8.0
 - MYSQL5.7
@@ -10,13 +10,13 @@
 - NGINX
 - XDEBUG
 - VSCODE
-- LAMPCONFIG.SH
+- LAMPCONFIG.SH (Configurador de stack)
 
 &nbsp;<br />
 ## INTRODUÇÃO
 
 &nbsp;<br />
-Após seguir as instruções deste passo a passo, será possível chavear o ambiente de desenvolvimento com apenas uma linha de comando, como neste exemplo:
+Após seguir as instruções, será possível mudar o stack de desenvolvimento com apenas um comando, como neste exemplo:
 ```console
 sudo lampconfig.sh "NGINX PHP7.4 MYSQL5.7"
 ```
@@ -24,16 +24,16 @@ Ou ainda:
 ```console
 sudo lampconfig.sh "APACHE PHP8.0 MYSQL8.0"
 ```
-Diferente das soluções que são baseadas em containers, aqui, todos as aplicações são instalados de forma nativa. O controle é feito pelo script **lampconfig.sh**.
+Diferente das soluções baseadas em container, aqui, as aplicações são instaladas de forma nativa. O controle é feito pelo script **lampconfig.sh**.
 
-Um problema bastante comum para o desenvolvedor que adota o Linux, é a ausência de um ambiente integrado e flexível de desenvolvimento LAMP/LEMP que permita testar sua aplicação em diferentes versões de configuração. Até o momento, não existe um similar do [Laragon](https://laragon.org/) para Linux. Esta foi a necessidade que levou ao desenvolvimento desta solução e a criação deste manual.
+Um problema bastante comum para o desenvolvedor que adota Linux, é a ausência de um ambiente integrado e flexível de desenvolvimento LAMP/LEMP que permita testar sua aplicação em diferentes versões de configuração. Até o momento, não existe um similar do [Laragon](https://laragon.org/) para Linux. Esta foi a necessidade que levou ao desenvolvimento desta solução e a criação deste manual.
 
 Existem vários tutoriais de configuração LAMP na internet. O que este tem de diferente?
 **Nenhum mostra como fazer a configuração de fim a fim. Nenhum mostra como montar uma solução que permita trocar diferentes versões de stack**. Esta foi a motivação para criar este artigo. O mesmo é o resultado da combinação de dezenas de sites e alguns dias de tentativas, erros e desenvolvimento próprio.
 
-Vamos supor que você possui um site Wordpress em produção e precisa testar sua compatibilidade com uma nova versão de Webserver ou Database antes de atualizar o servidor. É impraticável criar 8 (ou mais) máquinas virtuais para testar cada variação possível. Por este motivo é que a possibilidade de trocar diferentes versões de stack é importante.
+Vamos supor que você possui um site Wordpress em produção e precisa testar sua compatibilidade com uma nova versão de Webserver ou Database antes de atualizar o servidor. É inviável criar uma máquina virtual para cada combinação possível. Por este motivo é que a capacidade de trocar diferentes versões de stack é importante.
 
-Após seguir os passos aqui descritos, você terá uma máquina de desenvolvimento com as seguintes características:
+Após seguir os passos aqui descritos, você terá um ambiente de desenvolvimento com as seguintes características:
 
 - NGINX/APACHE, PHP7.4/PHP8.0, MYSQL5.7/MYSQL8.0. Instalação original, sem container.
 - Combinação entre quaisquer das 8 possibilidades de WEBSERVER, PHP e MYSQL
@@ -45,7 +45,7 @@ Setup utilizado: [VirtualBox](https://www.virtualbox.org/), [Xubuntu 20.04](http
 &nbsp;<br />
 ## MYSQL 8.0
 
-No cso do Linux, existem 2 modos de instalar mais de uma versão de MYSQL em uma mesma máquina:
+No caso do Linux, existem 2 modos de instalar mais de uma versão de MYSQL em uma mesma máquina:
 
 1. Conteinizar a instalação usando [Docker](https://en.wikipedia.org/wiki/Docker_(software))
 2. Instalar a partir do código fonte, indicando a pasta desejada em cada compilação.
