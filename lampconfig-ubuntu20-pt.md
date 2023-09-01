@@ -919,7 +919,7 @@ Desative o site default. Ele não será mais necessário.
 sudo unlink /etc/nginx/sites-enabled/default
 ```
 ```console
-sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default_bkp
+sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default_backup
 ```
 
 &nbsp;<br />
