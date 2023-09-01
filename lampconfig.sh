@@ -2,7 +2,7 @@
 
 # is there parameters?
 if [ $# -eq 0 ]; then
-	echo -e "${RED}ERROR: Please specify desired stack:(APACHE,NGINX) PHP(PHP7.4,PHP8.0) MYSQL(MYSQL5.7,MYSQL8.0)${NOCOLOR}"
+	echo -e "${RED}ERROR: Please specify the desired stack:(APACHE,NGINX) (PHP7.4,PHP8.0) (MYSQL5.7,MYSQL8.0)${NOCOLOR}"
 	exit 1
 fi
 
