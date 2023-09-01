@@ -16,7 +16,7 @@
 ## INTRODUÇÃO
 
 &nbsp;<br />
-Após seguir as instruções, será possível mudar o stack de desenvolvimento com apenas um comando, como neste exemplo:
+Após seguir as instruções, será possível montar um ambiente que permite mudar o stack de desenvolvimento com uma linha de comando, como neste exemplo:
 ```console
 sudo lampconfig.sh "NGINX PHP7.4 MYSQL5.7"
 ```
