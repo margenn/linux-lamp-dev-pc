@@ -914,9 +914,12 @@ grep -wns 'fastcgi_pass.*' /etc/nginx/sites-available/localhost_php8.0 -A 0
 ```
 
 &nbsp;<br />
-Apague o symbolic link para o site que vem pré-configurado. Não será mais necessário
+Desative o site default. Ele não será mais necessário.
 ```console
 sudo unlink /etc/nginx/sites-enabled/default
+```
+```console
+sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default_bkp
 ```
 
 &nbsp;<br />
