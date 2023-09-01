@@ -612,7 +612,7 @@ Linha 170: Edite a diretiva que começa com `<Directory \/var\/www...>` e faça 
         Options Indexes FollowSymLinks
         AllowOverride None
         Require all granted
-        DirectoryIndex index.html index.php
+        DirectoryIndex index.php index.html
 </Directory>
 ```
 **IMPORTANTE!**: Não esqueça de trocar **ma** pelo seu usuário!
@@ -887,7 +887,7 @@ server {
     listen 80;
     server_name localhost;
     root /home/ma/Documents/public_html/localhost;
-    index index.php index.html index.htm index.nginx-debian.html;
+    index index.php index.html index.htm;
     location / {
         try_files $uri $uri/ /index.php$is_args$args;
     }
@@ -986,7 +986,7 @@ server {
 	server_name localhost;
 	listen 127.0.0.1:443 ssl;
 	root /home/ma/Documents/public_html/localhost;
-	index index.html index.htm index.php;
+	index index.php index.html index.htm;
 	location / {
 		try_files $uri $uri/ /index.php$is_args$args;
 	}
@@ -1304,7 +1304,7 @@ server {
 	server_name teste.dev.br;
 	listen 127.0.0.1:443 ssl;
 	root /home/ma/Documents/public_html/teste.dev.br;
-	index index.html index.htm index.php;
+	index index.php index.html index.htm;
 	location / {
 		try_files $uri $uri/ /index.php$is_args$args;
 	}
