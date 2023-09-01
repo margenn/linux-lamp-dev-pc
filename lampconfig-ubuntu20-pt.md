@@ -1199,7 +1199,7 @@ Obs: Lembrando mais uma vez que você deve trocar **ma** pelo seu usuário.
 
 Para subir uma nova configuração use este comando:
 ```console
-/home/ma/Documents/lampconfig.sh "APACHE PHP7.4 MYSQL5.7"
+sudo /home/ma/Documents/lampconfig.sh "APACHE PHP7.4 MYSQL5.7"
 ```
 As opções são:
 ```
@@ -1373,5 +1373,9 @@ Edite o arquivo lampconfig.sh e **comente** as 4 linhas referentes a este site.
 editor ~/Documents/lampconfig.sh
 ```
 
-Para criar outros domínios, o processo é análogo a este.
+Aplique as configurações, subindo uma stack, como no exemplo:
+```console
+sudo ~/Documents/lampconfig.sh "APACHE PHP7.4 MYSQL5.7"
+```
 
+Para criar outros domínios, o processo é análogo a este.
