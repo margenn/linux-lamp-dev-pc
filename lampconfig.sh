@@ -1,127 +1,132 @@
 #!/bin/bash
 
+# Lit of space-separated sites that you want to activate (/etc/../sites-enabled folder)
+servernames="localhost"
+
+# all installed services (the name must be exactly the same of systemctl)
+webservers='apache2 nginx'
+phps='php7.4-fpm php8.0-fpm'
+databases='mysql5.7 mysql8.0'
+
+################################################################################
+
 # is there parameters?
 if [ $# -eq 0 ]; then
-	echo -e "${RED}ERROR: Please specify the desired stack:(APACHE,NGINX) (PHP7.4,PHP8.0) (MYSQL5.7,MYSQL8.0)${NOCOLOR}"
+	echo -e "${RED}ERROR: You must specify some stack. Eg: ...lampconfig.sh \"nginx php7.4 mysql5.7\"${NOCOLOR}"
 	exit 1
 fi
 
-#color of msgs
+# all services
+services="$webservers $phps $databases"
+
+# msg colors
 RED='\033[1;31m';GREEN='\033[1;32m';BLUE='\033[1;34m';NOCOLOR='\033[0m'
 
-#transform parameters in uppercase
-parameters=$(echo $1 | tr '[:lower:]' '[:upper:]')
+# parameters to lowercase
+parameters=$(echo $1 | tr '[:upper:]' '[:lower:]')
 
-#parsing parameters
-webserverRegex='(APACHE|NGINX)'
-if ! [[ $parameters =~ $webserverRegex ]]; then
-	echo -e "${RED}ERROR: parameter must have 'APACHE' or 'NGINX'${NOCOLOR}"
-	exit 1
-fi
-phpRegex='(PHP7.4|PHP8.0)'
-if ! [[ $parameters =~ $phpRegex ]]; then
-	echo -e "${RED}ERROR: parameter must have 'PHP7.4' or 'PHP8.0'${NOCOLOR}"
-	exit 1
-fi
-mysqlRegex='(MYSQL5.7|MYSQL8.0)'
-if ! [[ $parameters =~ $mysqlRegex ]]; then
-	echo -e "${RED}ERROR: parameter must have 'MYSQL5.7' or 'MYSQL8.0'${NOCOLOR}"
-	exit 1
-fi
-
-# stop everything
-if service --status-all | grep -Fiq 'apache2'; then
-	echo -e "${BLUE}Stopping APACHE${NOCOLOR}"
-	systemctl stop apache2.service
-fi
-if service --status-all | grep -Fiq 'nginx'; then
-	echo -e "${BLUE}Stopping NGINX${NOCOLOR}"
-	systemctl stop nginx.service
-fi
-if service --status-all | grep -Fiq 'php7.4'; then
-	echo -e "${BLUE}Stopping PHP7.4${NOCOLOR}"
-	systemctl stop php7.4-fpm.service
-fi
-if service --status-all | grep -Fiq 'php8.0'; then
-	echo -e "${BLUE}Stopping PHP8.0${NOCOLOR}"
-	systemctl stop php8.0-fpm.service
-fi
-if service --status-all | grep -Fiq 'mysql5.7'; then
-	echo -e "${BLUE}Stopping MYSQL5.7${NOCOLOR}"
-	systemctl stop mysql5.7.service
-fi
-if service --status-all | grep -Fiq 'mysql8.0'; then
-	echo -e "${BLUE}Stopping MYSQL8.0${NOCOLOR}"
-	systemctl stop mysql8.0.service
-fi
-
-
-#start webserver + php
-if [[ $parameters =~ ^.*APACHE.*$ ]]; then
-		if [[ $parameters =~ ^.*PHP7.4.*$ ]]; then
-			echo -e "${BLUE}Starting APACHE with PHP7.4${NOCOLOR}"
-		update-alternatives --quiet --set php /usr/bin/php7.4
-		ln -sf /etc/apache2/sites-available/localhost_php7.4.conf /etc/apache2/sites-enabled/localhost.conf
-		#ln -sf /etc/apache2/sites-available/teste.dev.br_php7.4.conf /etc/apache2/sites-enabled/teste.dev.br.conf
-		systemctl start apache2.service && systemctl start php7.4-fpm.service
-		if [ $? -eq 0 ]; then
-			echo -e "${GREEN}SUCCESS: APACHE + PHP7 up and running!${NOCOLOR}"
-		else
-			echo -e "${RED}ERROR: APACHE + PHP7. Something went wrong...${NOCOLOR}"
-		fi
+# find choosen stack
+for parameter in $parameters;do
+	if [[ $webservers == *"$parameter"* ]]; then # $parameter is substring of $webservers?
+		webserver=$(echo "$webservers" | sed -E "s/.*(\S*$parameter\S*).*/\1/") # extract matched webserver
+	elif [[ $phps == *"$parameter"* ]]; then
+		php=$(echo "$phps" | sed -E "s/.*(\S*$parameter\S*)-fpm.*/\1/")
+	elif [[ $databases == *"$parameter"* ]]; then
+		database=$(echo "$databases" | sed -E "s/.*(\S*$parameter\S*).*/\1/")
 	else
-		echo -e "${BLUE}Starting APACHE with PHP8.0${NOCOLOR}"
-		update-alternatives --quiet --set php /usr/bin/php8.0
-		ln -sf /etc/apache2/sites-available/localhost_php8.0.conf /etc/apache2/sites-enabled/localhost.conf
-		#ln -sf /etc/apache2/sites-available/teste.dev.br_php8.0.conf /etc/apache2/sites-enabled/teste.dev.br.conf
-		systemctl start apache2.service && systemctl start php8.0-fpm.service
-		if [ $? -eq 0 ]; then
-			echo -e "${GREEN}SUCCESS: APACHE + PHP8.0 up and running!${NOCOLOR}"
-		else
-			echo -e "${RED}ERROR: APACHE + PHP8.0 Something went wrong...${NOCOLOR}"
-		fi
+		echo -e "${RED}ERROR: Parameter [$parameter] is not substring of [$services]${NOCOLOR}"
+		exit 1
 	fi
+done
+
+# check if services are present
+if ! [[ -n "$webserver" ]]; then
+	echo -e "${RED}ERROR: WEBSERVER not defined.${NOCOLOR}"; exit 1
+elif ! [[ -n "$php" ]]; then
+	echo -e "${RED}ERROR: PHP not defined.${NOCOLOR}"; exit 1
+elif ! [[ -n "$database" ]]; then
+	echo -e "${RED}ERROR: DATABASE not defined.${NOCOLOR}"; exit 1
 else
-	if [[ $parameters =~ ^.*PHP7.4.*$ ]]; then
-		echo -e "${BLUE}Starting NGINX with PHP7.4${NOCOLOR}"
-		update-alternatives --quiet --set php /usr/bin/php7.4
-		ln -sf /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost
-		#ln -sf /etc/nginx/sites-available/teste.dev.br_php7.4 /etc/nginx/sites-enabled/teste.dev.br
-		systemctl start php7.4-fpm.service && systemctl start nginx.service
-		if [ $? -eq 0 ]; then
-			echo -e "${GREEN}SUCCESS: NGINX + PHP7.4 up and running!${NOCOLOR}"
-		else
-			echo -e "${RED}ERROR: NGINX + PHP7.4 Something went wrong...${NOCOLOR}"
-		fi
-	else
-		echo -e "${BLUE}Starting NGINX with PHP8.0${NOCOLOR}"
-		update-alternatives --quiet --set php /usr/bin/php8.0
-		ln -sf /etc/nginx/sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost
-		#ln -sf /etc/nginx/sites-available/teste.dev.br_php8.0 /etc/nginx/sites-enabled/teste.dev.br
-		systemctl start nginx.service && systemctl start php8.0-fpm.service
-		if [ $? -eq 0 ]; then
-			echo -e "${GREEN}SUCCESS: NGINX + PHP8.0 up and running!${NOCOLOR}"
-		else
-			echo -e "${RED}ERROR: NGINX + PHP8.0 Something went wrong...${NOCOLOR}"
-		fi
-	fi
+	echo -e "${BLUE}Choosen services: $webserver ${php}-fpm $database"
 fi
 
-#start mysql
-if [[ $parameters =~ ^.*MYSQL5.7*$ ]]; then
-	echo -e "${BLUE}Starting MYSQL5.7${NOCOLOR}"
-	systemctl start mysql5.7.service
-	if [ $? -eq 0 ]; then
-		echo -e "${GREEN}SUCCESS: MYSQL5.7 up and running!${NOCOLOR}"
-	else
-		echo -e "${RED}ERROR: MYSQL5.7 Something went wrong...${NOCOLOR}"
+# START ENVIRONMENT CONFIGURATION
+
+# stop all services
+for srvc in $services;do
+	if service --status-all | grep -Fiq "${srvc}"; then
+		echo -e "${BLUE}Stopping ${srvc}${NOCOLOR}"
+		systemctl stop ${srvc}.service
 	fi
-else
-	echo -e "${BLUE}Starting MYSQL8.0${NOCOLOR}"
-	systemctl start mysql8.0.service
-	if [ $? -eq 0 ]; then
-		echo -e "${GREEN}SUCCESS: MYSQL8.0 up and running!${NOCOLOR}"
-	else
-		echo -e "${RED}ERROR: MYSQL8.0 Something went wrong...${NOCOLOR}"
+done
+
+# apache configuration file has extension = '.conf'
+conf=$(if [[ $webserver == *"apache"* ]]; then echo ".conf"; else echo ""; fi)
+
+# configure
+find /etc/$webserver/sites-enabled -maxdepth 1 -type l -exec rm {} \; # disable all sites
+update-alternatives --quiet --set php /usr/bin/$php # choose php version
+for servername in $servernames;do
+	echo -e "${BLUE}Enabling site [$servername] for [$webserver]/[$php].${NOCOLOR}"
+	ln -sf /etc/${webserver}/sites-available/${servername}_${php}${conf} /etc/${webserver}/sites-enabled/${servername}${conf}
+done
+
+# start services
+systemctl start ${php}-fpm.service
+if [ $? -eq 0 ]; then echo -e "${GREEN}[${php}] Started${NOCOLOR}"; else echo -e "${RED}ERROR:[${php}].${NOCOLOR}" && exit 1; fi
+systemctl start ${webserver}.service
+if [ $? -eq 0 ]; then echo -e "${GREEN}[${webserver}] Started${NOCOLOR}"; else echo -e "${RED}ERROR:[${webserver}].${NOCOLOR}" && exit 1; fi
+systemctl start ${database}.service
+if [ $? -eq 0 ]; then echo -e "${GREEN}[${database}] Started${NOCOLOR}"; else echo -e "${RED}ERROR:[${database}].${NOCOLOR}" && exit 1; fi
+
+# remove/add entries in /etc/hosts according to servernames
+while read line; do
+	# comment orphan lines without a servername
+	if [[ "$line" =~ "127.0.0.1" ]]; then # only localhost ipv4
+		servernameFound=false
+		for servername in $servernames; do
+			if [[ $servername != "localhost" ]]; then
+				if [[ "$line" =~ $servername ]]; then
+					servernameFound=true
+					break
+				fi
+			fi
+		done
+		if [[ "$servernameFound" = false ]]; then
+			# this line does not have a servername, comment it
+			if ! [[ $line =~ localhost ]]; then
+				commentedRegex='^#.+'
+				if ! [[ "$line" =~ $commentedRegex ]]; then
+					orphanHostname=$(echo "$line" | sed -E "s/.+\s+(\S+)/\1/") # extract last word (webserver)
+					# comment unused local dns
+					sed -i "/$orphanHostname/ s/./# &/" /etc/hosts # comment line
+				fi
+			fi
+		fi
 	fi
-fi
+done </etc/hosts
+# insert/uncoment lines with servername
+for servername in $servernames; do
+	if [[ $servername != "localhost" ]]; then
+		regexLine="127.0.0.1\s*$servername"
+		line=$(cat /etc/hosts | grep $regexLine)
+		# echo $line
+		if ! [[ -n "$line" ]]; then # empty?
+			# insert new entry after "127.0.0.1 localhost"
+			sed -i -E "/127.0.0.1\\s+localhost/a 127.0.0.1\\t$servername" /etc/hosts
+		else
+			commentedRegex="^#\s*"
+			if [[ "$line" =~ $commentedRegex ]]; then
+				echo $line
+				# uncomment line
+				sed -i -E "s/^#\s*($regexLine)/\1/" /etc/hosts
+			fi
+		fi
+	fi
+done
+
+echo "################### /etc/hosts: relevant lines ##################"
+while read line; do
+	if [[ "$line" =~ "127.0.0.1" ]]; then echo "$line"; fi
+done </etc/hosts
+echo "#################################################################"

@@ -1,16 +1,17 @@
 ## LINUX UBUNTU 20.04 LAMP/LEMP DEV SERVER
 
-### Passo a Passo: Como configurar um ambiente de desenvolvimento [LAMP](https://en.wikipedia.org/wiki/LAMP_%28software_bundle%29)/[LEMP](https://lemp.io/) no Ubuntu 20.04 com:
+### Passo a Passo: Configurando um ambiente de desenvolvimento [LAMP](https://en.wikipedia.org/wiki/LAMP_%28software_bundle%29)/[LEMP](https://lemp.io/) no Ubuntu 20.04:
 
-- MYSQL8.0
-- MYSQL5.7
-- PHP7.4
-- PHP8.0
-- APACHE
-- NGINX
-- XDEBUG
-- VSCODE
-- LAMPCONFIG.SH (Configurador de stack)
+- MYSQL8.0 [🔗](#mysql-80)
+- MYSQL5.7 [🔗](#mysql-57)
+- PHP7.4 [🔗](#php-74)
+- PHP8.0 [🔗](#php-80)
+- APACHE [🔗](#apache)
+- NGINX [🔗](#nginx)
+- XDEBUG [🔗](#xdebug)
+- VSCODE [🔗](#vscode)
+- lampconfig.sh (Orquestrador) [🔗](#lampconfigsh)
+- Configuração de novo domínio [🔗](#criando-um-novo-domínio-testedevbr)
 
 &nbsp;<br />
 ## INTRODUÇÃO
@@ -45,6 +46,7 @@ Setup utilizado: [VirtualBox](https://www.virtualbox.org/), [Xubuntu 20.04](http
 &nbsp;<br />
 ## MYSQL 8.0
 
+&nbsp;<br />
 No caso do Linux, existem 2 modos de instalar mais de uma versão de MYSQL em uma mesma máquina:
 
 1. Conteinizar a instalação usando [Docker](https://en.wikipedia.org/wiki/Docker_(software))
@@ -54,6 +56,10 @@ No caso do Linux, existem 2 modos de instalar mais de uma versão de MYSQL em um
 Aqui, vamos usar a **segunda opção**, começando a instalação pelo MYSQL8.0, que é o passo mais 'pesado' de todos e que gera a maior quantidade de arquivos temporários (8GB).
 
 IMPORTANTE! Instale o MYSQL8.0 antes do MYSQL5.7 pois alguns comandos de inicialização (Ex. Criação de usuário) e finalização (Ex. Remoção de temporários) dependem desta sequência.
+
+
+&nbsp;<br />
+### Compilando o MYSQL 8.0
 
 &nbsp;<br />
 Instale os pacotes necessários para a compilação:
@@ -109,6 +115,9 @@ Instale:
 ```console
 sudo make install
 ```
+
+&nbsp;<br />
+### Configurando o MYSQL 8.0
 
 &nbsp;<br />
 Vá para a pasta de instalação e crie a sub-pasta que receberá os arquivos de dados criados na inicialização.
@@ -200,6 +209,10 @@ sudo systemctl restart mysql8.0.service
 ```
 
 &nbsp;<br />
+### Limpando arquivos temporários MYSQL 8.0
+
+
+&nbsp;<br />
 Caso não tenha ocorrido nenhum erro, seu banco de dados foi instalado com sucesso. Os fontes e o pacote de testes podem ser opcionalmente apagados com estes dois comandos:
 ```console
 sudo rm -R ~/Documents/mysql8-sources
@@ -219,11 +232,17 @@ sudo systemctl stop mysql8.0.service
 &nbsp;<br />
 ## MYSQL 5.7
 
+&nbsp;<br />
 Para o MYSQL5.7, o processo é bem parecido.
 
 Os pacotes necessários para a compilação já foram instalados no passo anterior.
 
 O usuário e grupo **mysql** também já foram criados no passo anterior.
+
+
+&nbsp;<br />
+### Compilando o MYSQL 5.7
+
 
 &nbsp;<br />
 Crie a pasta onde os fontes serão descompactados:
@@ -260,6 +279,10 @@ Instale:
 ```console
 sudo make install
 ```
+
+&nbsp;<br />
+### Configurando o MYSQL 5.7
+
 
 &nbsp;<br />
 Vá para a pasta de instalação e crie a sub-pasta onde ficarão os arquivos de dados
@@ -364,6 +387,10 @@ sudo systemctl restart mysql5.7.service
 ```
 
 &nbsp;<br />
+### Limpando os arquivos temorários MYSQL 5.7
+
+
+&nbsp;<br />
 Agora podemos apagar as bibliotecas usadas na compilação, códigos-fonte e demais arquivos desnecessários. Isto irá liberar ~10GB de espaço em disco:
 ```console
 sudo rm -R ~/Documents/mysql5-sources
@@ -380,9 +407,14 @@ Lembrando que o controle da versão irá subir será feito pelo script **lampcon
 &nbsp;<br />
 ## PHP 7.4
 
+&nbsp;<br />
 Diferente do MYSQL, o PHP já vem preparado para ser instalado em pastas separadas de acordo com a versão.
 
 Para que o APACHE e o NGINX possam compartilhar a mesma instância de PHP, este precisará ser instalado como FPM. Desta forma o PHP roda como um processo independente.
+
+
+&nbsp;<br />
+### Instalando o PHP 7.4
 
 &nbsp;<br />
 Instale os pacotes básicos:
@@ -413,6 +445,9 @@ Caso o serviço esteja OK, você deverá ver uma mensagem assim:
              ├─70988 php-fpm: pool www
              └─70989 php-fpm: pool www
 ```
+
+&nbsp;<br />
+### Configurando o PHP 7.4
 
 &nbsp;<br />
 Edite o arquivo de configuração do serviço e faça alterações em alguns parâmetros conforme mostrado:
@@ -465,6 +500,9 @@ systemctl restart php7.4-fpm.service && systemctl status php7.4-fpm.service
 ## PHP 8.0
 
 &nbsp;<br />
+### Configurando um novo PPA
+
+&nbsp;<br />
 Prepare a adição de um novo PPA (Personal Package Archive). PPAs permitem a instalação de softwares de repositórios alternativos.
 ```console
 sudo apt install software-properties-common
@@ -473,6 +511,10 @@ sudo apt install software-properties-common
 sudo add-apt-repository ppa:ondrej/php
 ```
 Obs: O segundo comando retornará uma longa mensagem com alguns avisos. Apenas tecle [ENTER] para prosseguir.
+
+
+&nbsp;<br />
+### Instalando o PHP 8.0
 
 &nbsp;<br />
 Instale os pacotes:
@@ -503,6 +545,9 @@ Caso o serviço esteja OK, você deverá ver uma mensagem assim:
              ├─91500 php-fpm: pool www
              └─91501 php-fpm: pool www
 ```
+
+&nbsp;<br />
+### Configurando o PHP 8.0
 
 &nbsp;<br />
 Edite o arquivo de configuração do serviço e faça alterações em alguns parâmetros conforme mostrado:
@@ -569,6 +614,11 @@ sudo update-alternatives --set php /usr/bin/php8.0
 &nbsp;<br />
 ## APACHE
 
+
+&nbsp;<br />
+### Instalando o Apache
+
+
 &nbsp;<br />
 Instale o Apache:
 ```console
@@ -599,6 +649,9 @@ Content-Length: 10918
 Vary: Accept-Encoding
 Content-Type: text/html
 ```
+
+&nbsp;<br />
+### Configurando o Apache
 
 &nbsp;<br />
 Mude a pasta de publicação de /var/www/ para ~/Documents/public_html/. Isto e necessário para que você possa editar suas aplicações pelo VSCODE sem precisar de **sudo**.
@@ -693,7 +746,7 @@ A mensagem de retorno deverá um trecho do html da página:
 ```
 
 &nbsp;<br />
-### A próxima etapa é configurar HTTPS no Apache.
+### Instalando certificado SSL no Apache (HTTPS).
 
 &nbsp;<br />
 Crie um certificado self-signed para o dominio **localhost**
@@ -766,7 +819,7 @@ O Firefox irá rejeitar o certificado e barrar o carregamento da página. Para f
 ![https-ok](./img/firefox-localhost-https-ok.png)
 
 &nbsp;<br />
-### Agora que Apache funciona com HTTPS, vamos adicionar a integração com o PHP
+### Configurando PHP no Apache
 
 &nbsp;<br />
 Configure o Apache para usar o PHP via FPM
@@ -843,6 +896,9 @@ sudo systemctl stop apache2.service && sudo systemctl disable apache2.service
 ## NGINX
 
 &nbsp;<br />
+#### Instalando o NGINX
+
+&nbsp;<br />
 Instale o Nginx:
 ```console
 sudo apt install nginx
@@ -865,6 +921,9 @@ Connection: keep-alive
 ETag: "64e90fc2-2aa6"
 Accept-Ranges: bytes
 ```
+
+&nbsp;<br />
+### Configurando PHP no NGINX
 
 &nbsp;<br />
 Edite o arquivo /etc/nginx/nginx.conf
@@ -933,14 +992,14 @@ sudo ln -sf ../sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localho
 Logo após a execução de cada comando acima, abra este dois sites no navegador: http://localhost e http://localhost/phpinfo para verificar se o NGINX funciona com ambas versões do PHP.
 
 &nbsp;<br />
-## Configurando conexão segura via HTTPS
+### Instalando certificado SSL no NGINX (HTTPS)
 
 &nbsp;<br />
 Crie um arquivo DIFFIE-HELLMAN (DH).
 ```console
 sudo openssl dhparam -out /etc/nginx/dhparam.pem 4096
 ```
-Obs: Este comando pode levar varios minutos para ser executado.
+Obs: O processamento deste comando pode levar varios minutos.
 
 &nbsp;<br />
 Crie um snippet para comportar o atalho para os arquivos do certificado.
@@ -1003,7 +1062,7 @@ server {
 server {
 	server_name localhost;
 	listen 80;
-	return 302 https://$server_name$request_uri;
+	return 301 https://$server_name$request_uri;
 }
 ```
 **IMPORTANTE!**: Não esqueça de trocar **ma** pelo seu usuário!
@@ -1025,10 +1084,10 @@ Obs: O parâmetro -A 0 define a quantidade de linhas apresentadas após o match 
 &nbsp;<br />
 Reinicie o servidor com PHP7 depois com PHP8 usando este dois comandos.
 ```console
-sudo ln -sf ../sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
+sudo ln -sf /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
 ```console
-sudo ln -sf ../sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
+sudo ln -sf /etc/nginx/sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
 Logo após a execução de cada comando acima, abra este dois sites no navegador: https://localhost e https://localhost/phpinfo para verificar se ambas as versões do PHP estão OK.
 
@@ -1046,6 +1105,9 @@ Instale o xdebug
 ```console
 sudo apt install php7.4-xdebug php8.0-xdebug
 ```
+
+&nbsp;<br />
+### Configurando o XDEBUG
 
 &nbsp;<br />
 Edite o arquivo de configurações do XDEBUG para as versões 7 e 8 do PHP
@@ -1071,6 +1133,9 @@ sudo cp /etc/php/7.4/mods-available/xdebug.ini /etc/php/8.0/mods-available/xdebu
 ```
 
 &nbsp;<br />
+### Testando a instalação do XDEBUG
+
+&nbsp;<br />
 Inicie o NGINX com o PHP7.4. Para isso, execute estes comandos para Parar, Trocar a versão do PHP e configurar o NGINX:
 ```console
 sudo systemctl stop nginx.service && sudo systemctl stop php7.4-fpm.service
@@ -1089,6 +1154,9 @@ Abra a página https://localhost/phpinfo no navegador. Role a tela até aparecer
 
 Procure pela string "VSCODE" nesta página. Ela precisa estar presente.
 
+Repita [este passo](#testando-a-instalação-do-xdebug) trocando 7.4 por 8.0
+
+
 &nbsp;<br />
 ## VSCODE
 
@@ -1101,6 +1169,10 @@ Baixe o instalador depois execute a instalação com este comando:
 sudo apt install ~/Downloads/code_1.81.1-1691620686_amd64.deb
 ```
 Obs: Altere o nome do arquivo para a versão que baixou.
+
+
+&nbsp;<br />
+### Configurando o debugger do VSCODE
 
 &nbsp;<br />
 Execute o Visual Studo Code e instale a extension **PHP Debug**
@@ -1131,7 +1203,10 @@ Insira as configurações abaixo e salve o arquivo
 ```
 
 &nbsp;<br />
-Vamos fazer nossa primeira edição no código fonte do site.
+### Preparando o index.php
+
+&nbsp;<br />
+Vamos fazer nossa primeira edição no código fonte do site pelo VSCODE.
 
 Abra o arquivo:
 File > Open Folder > ~/Documents/public_html Clique em "Yes, I thrust the authors", depois abra o arquivo phpinfo/index.php.
@@ -1145,13 +1220,14 @@ phpinfo();
 ```
 
 &nbsp;<br />
-#### O XDEBUG já está configurado tanto no PHP quanto no VSCODE. Agora é hora de testar.
+### Iniciando o primeiro debug
 
+&nbsp;<br />
 Uma vez que o XDEBUG está ativo, e o navegador está na página a ser depurada, o VSCODE precisa reconhecer o XDEBUG.
 
 Obs: Esta parte é um pouco "chata" porque as vezes o VSCODE não reconhece o XDEBUG de imediato. Pode ser necessário reabrir o VSCODE e recarregar a página no navegador para que o VSCODE reconheça o XDEBUG através da porta 9003.
 
-Quando o VSCODE reconhecer o XDEBUG a opção **Listen for Xdebug** ficará ativa e deve estar seleconada.
+Quando o VSCODE reconhecer o XDEBUG a opção **Listen for Xdebug** ficará ativa e deve estar selecionada.
 
 ![alt](./img/vscode-listen-xdebug.png)
 
@@ -1181,7 +1257,7 @@ sudo ln -sf /etc/nginx/sites-available/localhost_php8.0 /etc/nginx/sites-enabled
 Agora Teste o debugger com o PHP8.0 e a configuração estará completa.
 
 &nbsp;<br />
-## LAMPCONFIG.SH
+## lampconfig.sh
 
 &nbsp;<br />
 Esse é o script que vai orquestrar tudo o que foi instalado aqui, subindo seletivamente os serviços de acordo com o parametro recebido:
@@ -1195,29 +1271,34 @@ chown ma:ma /home/ma/Documents/lampconfig.sh && sudo chmod 750 /home/ma/Document
 Obs: Lembrando mais uma vez que você deve trocar **ma** pelo seu usuário.
 
 
-#### O ambiente está configurado!
 
-Para subir uma nova configuração use este comando:
+Para subir a stack desejada use este comando:
 ```console
-sudo /home/ma/Documents/lampconfig.sh "APACHE PHP7.4 MYSQL5.7"
+sudo /home/ma/Documents/lampconfig.sh "apache php7 mysql5"
 ```
 As opções são:
 ```
-"APACHE PHP7.4 MYSQL5.7"
-"APACHE PHP7.4 MYSQL8.0"
-"APACHE PHP8.0 MYSQL5.7"
-"APACHE PHP8.0 MYSQL8.0"
-"NGINX PHP7.4 MYSQL5.7"
-"NGINX PHP7.4 MYSQL8.0"
-"NGINX PHP8.0 MYSQL5.7"
-"NGINX PHP8.0 MYSQL8.0"
+"apache php7 mysql5"
+"apache php7 mysql8"
+"apache php8 mysql5"
+"apache php8 mysql8"
+"nginx php7 mysql5"
+"nginx php7 mysql8"
+"nginx php8 mysql5"
+"nginx php8 mysql8"
 ```
+
+
 
 &nbsp;<br />
 ## Criando um novo domínio 'teste.dev.br'
 
+
 &nbsp;<br />
-### Certificado:
+Em uma situação real, será necessário que o servidor de desenvolvimento utilize o mesmo endereço do servidor de produção, então vamos configurar o ambiente para servir um domínio fictício chamado **teste.dev.br**.
+
+&nbsp;<br />
+### Certificado teste.dev.br:
 
 Crie um certificado self-signed para o dominio **teste.dev.br**
 ```console
@@ -1236,7 +1317,7 @@ Email Address []: webmaster@teste.dev.br
 ```
 
 &nbsp;<br />
-### index.php:
+### index.php teste.dev.br:
 
 Crie uma nova pasta de publicação e o arquivo de teste:
 ```console
@@ -1247,7 +1328,7 @@ echo '<?php phpinfo(); ?>' > ~/Documents/public_html/teste.dev.br/index.php
 ```
 
 &nbsp;<br />
-### Apache:
+### Apache teste.dev.br:
 
 Crie os arquivos de configuração:
 ```console
@@ -1284,7 +1365,7 @@ sudo sed -i -E 's/7.4/8.0/' /etc/apache2/sites-available/teste.dev.br_php8.0.con
 ```
 
 &nbsp;<br />
-### NGINX
+### NGINX teste.dev.br:
 
 Crie um snippet para comportar o atalho para os arquivos do certificado.
 ```console
@@ -1321,7 +1402,7 @@ server {
 server {
 	server_name teste.dev.br;
 	listen 80;
-	return 302 https://$server_name$request_uri;
+	return 301 https://$server_name$request_uri;
 }
 ```
 **IMPORTANTE!**: Não esqueça de trocar **ma** pelo seu usuário!
@@ -1336,46 +1417,67 @@ sudo sed -i -E 's/7\.4/8.0/' /etc/nginx/sites-available/teste.dev.br_php8.0
 ```
 
 &nbsp;<br />
-### /etc/hosts
+### lampconfig.sh teste.dev.br
 
-Edite o arquivo /etc/hosts e insira o novo dominio apontando para 127.0.0.1
-```console
-sudo editor /etc/hosts
-```
-Insira esta linha::
-```
-127.0.0.1	teste.dev.br
-```
-
-Edite o arquivo lampconfig.sh e descomente as 4 linhas referentes a este site.
+Edite o arquivo lampconfig.sh
 ```console
 editor ~/Documents/lampconfig.sh
+```
+Na linha 4, adicione o domínio na variavel **servername**:
+```
+servernames="localhost teste.dev.br"
 ```
 
 &nbsp;<br />
-### Para desabilitar o site teste.dev.br:
+### /etc/hosts teste.dev.br
 
-Apague os symlinks
-```console
-sudo unlink /etc/apache2/sites-enabled/teste.dev.br.conf
-```
-```console
-sudo unlink /etc/nginx/sites-enabled/teste.dev.br
-```
+O script **lampconfig.sh** faz os ajustes necessarios, inserindo, comentando e descomentando entradas de acordo com com a lista da linha 4: **servername**
 
-Edite o arquivo /etc/hosts e comente a linha contendo: teste.dev.br
+
+&nbsp;<br />
+### Startando a stack desejada, exemplo:
+
 ```console
-sudo editor /etc/hosts
+sudo ~/Documents/lampconfig.sh "nginx php7 mysql5"
 ```
 
-Edite o arquivo lampconfig.sh e **comente** as 4 linhas referentes a este site.
+Mensagens de retorno:
+```
+Choosen services: nginx php7.4-fpm mysql5.7
+Stopping apache2
+Stopping nginx
+Stopping php7.4-fpm
+Stopping php8.0-fpm
+Stopping mysql5.7
+Stopping mysql8.0
+Enabling site [localhost] for [nginx]/[php7.4].
+Enabling site [teste.dev.br] for [nginx]/[php7.4].
+[php7.4] Started
+[nginx] Started
+[mysql5.7] Started
+
+################### /etc/hosts: relevant lines ##################
+127.0.0.1	localhost
+127.0.0.1	teste.dev.br
+#################################################################
+```
+
+
+&nbsp;<br />
+## Desabilitando teste.dev.br:
+
+Edite o arquivo lampconfig.sh
 ```console
 editor ~/Documents/lampconfig.sh
+```
+Na linha 4, remova o domínio na variavel **servername**:
+```
+servernames="localhost"
 ```
 
 Aplique as configurações, subindo uma stack, como no exemplo:
 ```console
-sudo ~/Documents/lampconfig.sh "APACHE PHP7.4 MYSQL5.7"
+sudo ~/Documents/lampconfig.sh "apache php7 mysql5"
 ```
 
 Para criar outros domínios, o processo é análogo a este.
