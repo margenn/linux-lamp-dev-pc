@@ -23,7 +23,7 @@ sudo lampconfig.sh "NGINX PHP7.4 MYSQL5.7"
 ```
 Ou ainda:
 ```console
-sudo lampconfig.sh "APACHE PHP8.0 MYSQL8.0"
+sudo lampconfig.sh "apache php8 mysql8"
 ```
 Diferente das soluções baseadas em container, aqui, as aplicações são instaladas de forma nativa. O controle é feito pelo script **lampconfig.sh**.
 
@@ -472,7 +472,7 @@ Linha 1794: opcache.validate_timestamps=1
 Se preferir, apenas copie e cole os comandos abaixo para fazer as alterações necessárias:
 ```console
 sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 600/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 1000/' /etc/php/7.4/fpm/php.ini
+sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 10000/' /etc/php/7.4/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(memory_limit ?=).{0,10}$/\1 256M/' /etc/php/7.4/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(display_errors ?=).{0,10}$/\1 On/' /etc/php/7.4/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(display_startup_errors ?=).{0,10}$/\1 On/' /etc/php/7.4/fpm/php.ini
@@ -572,7 +572,7 @@ Linha 1789: opcache.validate_timestamps=1
 Ou se preferir, apenas copie e cole os comandos abaixo:
 ```console
 sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 600/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 1000/' /etc/php/8.0/fpm/php.ini
+sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 10000/' /etc/php/8.0/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(memory_limit ?=).{0,10}$/\1 256M/' /etc/php/8.0/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(display_errors ?=).{0,10}$/\1 On/' /etc/php/8.0/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(display_startup_errors ?=).{0,10}$/\1 On/' /etc/php/8.0/fpm/php.ini
