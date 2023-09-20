@@ -10,6 +10,10 @@ databases='mysql5.7 mysql8.0'
 
 ################################################################################
 
+# xdebug
+xdebugs='xdebugon xdebugoff'
+xdebugstate='on' #default
+
 # is there parameters?
 if [ $# -eq 0 ]; then
 	echo -e "${RED}ERROR: You must specify some stack. Eg: ...lampconfig.sh \"nginx php7.4 mysql5.7\"${NOCOLOR}"
@@ -17,13 +21,14 @@ if [ $# -eq 0 ]; then
 fi
 
 # all services
-services="$webservers $phps $databases"
+services="$webservers $phps $databases $xdebugs"
 
 # msg colors
 RED='\033[1;31m';GREEN='\033[1;32m';BLUE='\033[1;34m';NOCOLOR='\033[0m'
 
 # parameters to lowercase
 parameters=$(echo $1 | tr '[:upper:]' '[:lower:]')
+
 
 # find choosen stack
 for parameter in $parameters;do
@@ -33,6 +38,10 @@ for parameter in $parameters;do
 		php=$(echo "$phps" | sed -E "s/.*(\S*$parameter\S*)-fpm.*/\1/")
 	elif [[ $databases == *"$parameter"* ]]; then
 		database=$(echo "$databases" | sed -E "s/.*(\S*$parameter\S*).*/\1/")
+	elif [[ $xdebugs == *"$parameter"* ]]; then
+		if [[ $parameter == 'xdebugoff' ]]; then xdebugstate='off'
+		elif [[ $parameter == 'xdebugon' ]]; then xdebugstate='on'
+		fi
 	else
 		echo -e "${RED}ERROR: Parameter [$parameter] is not substring of [$services]${NOCOLOR}"
 		exit 1
@@ -67,8 +76,29 @@ conf=$(if [[ $webserver == *"apache"* ]]; then echo ".conf"; else echo ""; fi)
 find /etc/$webserver/sites-enabled -maxdepth 1 -type l -exec rm {} \; # disable all sites
 update-alternatives --quiet --set php /usr/bin/$php # choose php version
 for servername in $servernames;do
-	echo -e "${BLUE}Enabling site [$servername] for [$webserver]/[$php].${NOCOLOR}"
+	echo -e "${BLUE}Enabling site [$servername] for [$webserver]/[$php]${NOCOLOR}"
 	ln -sf /etc/${webserver}/sites-available/${servername}_${php}${conf} /etc/${webserver}/sites-enabled/${servername}${conf}
+done
+
+# enable/disable xdebug by removing/adding '-disabled' sufix in xdebug.ini
+for item in $phps;do
+	phpversion=$(echo $item | sed -E "s/php(.+)-fpm/\1/")
+	xdebugini="/etc/php/${phpversion}/mods-available/xdebug.ini"
+	if [[ $xdebugstate == "off" ]]; then
+		if [[ -f "${xdebugini}-disabled" ]]; then # file exists?
+			echo -e "${BLUE}xdebug ${phpversion} already OFF ${NOCOLOR}"
+		elif [[ -f "/etc/php/${phpversion}/mods-available/xdebug.ini" ]]; then
+			mv "$xdebugini" "$xdebugini-disabled" # disable xdebug
+			echo -e "${GREEN}xdebug ${phpversion} OFF ${NOCOLOR}"
+		fi
+	else #xdebugon
+		if [[ -f "${xdebugini}" ]]; then # file exists?
+			echo -e "${BLUE}xdebug ${phpversion} already ON ${NOCOLOR}"
+		elif [[ -f "/etc/php/${phpversion}/mods-available/xdebug.ini-disabled" ]]; then
+			mv "$xdebugini-disabled" "$xdebugini" # enable xdebug
+			echo -e "${GREEN}xdebug ${phpversion} ON ${NOCOLOR}"
+		fi
+	fi
 done
 
 # start services
@@ -125,8 +155,9 @@ for servername in $servernames; do
 	fi
 done
 
-echo "################### /etc/hosts: relevant lines ##################"
+echo
+echo -e "${BLUE}################### /etc/hosts: relevant lines ##################"
 while read line; do
-	if [[ "$line" =~ "127.0.0.1" ]]; then echo "$line"; fi
+	if [[ "$line" =~ "127.0.0.1" ]]; then echo -e "$line"; fi
 done </etc/hosts
-echo "#################################################################"
+echo -e "#################################################################${NOCOLOR}"

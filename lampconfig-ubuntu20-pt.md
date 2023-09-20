@@ -19,11 +19,11 @@
 &nbsp;<br />
 Após seguir as instruções, será possível mudar o stack de desenvolvimento com apenas um comando, como neste exemplo:
 ```console
-sudo lampconfig.sh "NGINX PHP7.4 MYSQL5.7"
+sudo lampconfig.sh "nginx php7.4 mysql5.7 xdebugon"
 ```
 Ou ainda:
 ```console
-sudo lampconfig.sh "apache php8 mysql8"
+sudo lampconfig.sh "apache php8 mysql8 xdebugoff"
 ```
 Diferente das soluções baseadas em container, aqui, as aplicações são instaladas de forma nativa. O controle é feito pelo script **lampconfig.sh**.
 
@@ -1272,9 +1272,9 @@ Obs: Lembrando mais uma vez que você deve trocar **ma** pelo seu usuário.
 
 
 
-Para subir a stack desejada use este comando:
+Para subir a stack desejada, siga a sintaxe do comando abaixo:
 ```console
-sudo /home/ma/Documents/lampconfig.sh "apache php7 mysql5"
+sudo ~/Documents/lampconfig.sh "apache php7 mysql5 xdebugoff"
 ```
 As opções são:
 ```
@@ -1288,6 +1288,7 @@ As opções são:
 "nginx php8 mysql8"
 ```
 
+*Obs: O parametro xdebugon/xdebugoff é opcional. Quando omitido, seu estado é ON por default.*
 
 
 &nbsp;<br />
@@ -1452,6 +1453,8 @@ Stopping mysql5.7
 Stopping mysql8.0
 Enabling site [localhost] for [nginx]/[php7.4].
 Enabling site [teste.dev.br] for [nginx]/[php7.4].
+xdebug 7.4 OFF
+xdebug 8.0 OFF
 [php7.4] Started
 [nginx] Started
 [mysql5.7] Started
