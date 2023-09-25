@@ -19,11 +19,11 @@
 &nbsp;<br />
 Após seguir as instruções, será possível mudar o stack de desenvolvimento com apenas um comando, como neste exemplo:
 ```console
-sudo lampconfig.sh "nginx php7.4 mysql5.7 xdebugon"
+sudo ~/lampconfig.sh "nginx php7.4 mysql5.7 xdebugon"
 ```
 Ou ainda:
 ```console
-sudo lampconfig.sh "apache php8 mysql8 xdebugoff"
+sudo ~/lampconfig.sh "apache php8 mysql8 xdebugoff"
 ```
 Diferente das soluções baseadas em container, aqui, as aplicações são instaladas de forma nativa. O controle é feito pelo script **lampconfig.sh**.
 
@@ -108,7 +108,7 @@ Compile os fontes.
 ```console
 sudo make
 ```
-Obs: Esse processamento leva cerca de meia hora.
+Obs: Esse processamento leva cerca de meia hora. Você irá ver algumas mensagens coloridas passando pela sua tela..
 
 &nbsp;<br />
 Instale:
@@ -205,7 +205,7 @@ sudo systemctl daemon-reload
 &nbsp;<br />
 Agora reinicie o banco de dados usando o systemctl:
 ```console
-sudo systemctl restart mysql8.0.service
+sudo systemctl restart mysql8.0.service && sudo systemctl status mysql8.0.service
 ```
 
 &nbsp;<br />
@@ -224,7 +224,7 @@ sudo rm -R /usr/local/mysql8.0/mysql-test
 Obs: Diferente do MYSQL5.7, a pasta /usr/local/mysql8.0/lib não pode ser removida:
 
 &nbsp;<br />
-Pare o banco de dados para não dar conflito com a próxima instalação:
+Pare o banco de dados para evitar conflito com a próxima instalação:
 ```console
 sudo systemctl stop mysql8.0.service
 ```
@@ -387,6 +387,13 @@ sudo systemctl restart mysql5.7.service
 ```
 
 &nbsp;<br />
+Pare o banco de dados:
+```console
+sudo systemctl stop mysql5.7.service
+```
+
+
+&nbsp;<br />
 ### Limpando os arquivos temorários MYSQL 5.7
 
 
@@ -493,8 +500,15 @@ grep -wns '\(max_execution_time\|max_input_vars\|memory_limit\|display_errors\|d
 &nbsp;<br />
 Reinicie e verifique o status do serviço
 ```console
-systemctl restart php7.4-fpm.service && systemctl status php7.4-fpm.service
+sudo systemctl restart php7.4-fpm.service && systemctl status php7.4-fpm.service
 ```
+
+&nbsp;<br />
+Tudo certo, podemos parar e desabilitar o serviço
+```console
+sudo systemctl disable --now php7.4-fpm.service
+```
+
 
 &nbsp;<br />
 ## PHP 8.0
@@ -593,7 +607,7 @@ grep -wns '\(max_execution_time\|max_input_vars\|memory_limit\|display_errors\|d
 &nbsp;<br />
 Reinicie e verifique o status do serviço
 ```console
-systemctl restart php8.0-fpm.service && systemctl status php8.0-fpm.service
+sudo systemctl restart php8.0-fpm.service && systemctl status php8.0-fpm.service
 ```
 
 &nbsp;<br />
@@ -610,6 +624,13 @@ sudo update-alternatives --set php /usr/bin/php7.4
 ```console
 sudo update-alternatives --set php /usr/bin/php8.0
 ```
+
+&nbsp;<br />
+Tudo certo, podemos parar e desabilitar o serviço
+```console
+sudo systemctl disable --now php8.0-fpm.service
+```
+
 
 &nbsp;<br />
 ## APACHE
@@ -654,14 +675,14 @@ Content-Type: text/html
 ### Configurando o Apache
 
 &nbsp;<br />
-Mude a pasta de publicação de /var/www/ para ~/Documents/public_html/. Isto e necessário para que você possa editar suas aplicações pelo VSCODE sem precisar de **sudo**.
+Mude a pasta de publicação de /var/www/ para ~/public_html/. Isto e necessário para que você possa editar suas aplicações pelo VSCODE sem precisar de **sudo**.
 ```console
 sudo editor /etc/apache2/apache2.conf
 ```
 
 Linha 170: Edite a diretiva que começa com `<Directory \/var\/www...>` e faça ela ficar assim:
 ```
-<Directory /home/ma/Documents/public_html/>
+<Directory /home/ma/public_html/>
         Options Indexes FollowSymLinks
         AllowOverride None
         Require all granted
@@ -679,28 +700,36 @@ Ou se preferir, apenas execute os comandos abaixo para efetuar as alterações n
 sudo sed -i -E '/(<Directory .var.www.?>)/a \\tDirectoryIndex index.html index.php' /etc/apache2/apache2.conf
 ```
 ```console
-sudo sed -i -E 's/(<Directory .var.www.?>)/<Directory \/home\/ma\/Documents\/public_html\/>/' /etc/apache2/apache2.conf
+sudo sed -i -E 's/(<Directory .var.www.?>)/<Directory \/home\/ma\/public_html\/>/' /etc/apache2/apache2.conf
 ```
 Verifica se as alteracoes foram feitas:
 ```console
-grep -wns '\/home\/ma\/Documents\/public_html' /etc/apache2/apache2.conf -A 5
+grep -wns '\/home\/ma\/public_html' /etc/apache2/apache2.conf -A 5
 ```
 Obs: O Comando acima mostra 5 linhas apos a linha do regex
 
 &nbsp;<br />
 Crie as páginas web usadas nos testes
 ```console
-mkdir ~/Documents/public_html && mkdir ~/Documents/public_html/localhost/
+mkdir ~/public_html && mkdir ~/public_html/localhost/
 ```
+
 ```console
-cp /var/www/html/index.html ~/Documents/public_html/localhost/
+cp /var/www/html/index.html ~/public_html/localhost/
 ```
+
 ```console
-mkdir ~/Documents/public_html/localhost/phpinfo
+mkdir ~/public_html/localhost/phpinfo
 ```
+
 ```console
-echo '<?php phpinfo(); ?>' > ~/Documents/public_html/localhost/phpinfo/index.php
+echo '<?php phpinfo(); ?>' > ~/public_html/localhost/phpinfo/index.php
 ```
+
+```console
+sudo chmod +x /home/ma
+```
+
 
 &nbsp;<br />
 Crie os arquivos de configuração para o dominio localhost
@@ -713,7 +742,7 @@ Adicione este conteúdo ao arquivo e salve-o:
 ```
 <VirtualHost *:80>
 	ServerName localhost
-	DocumentRoot /home/ma/Documents/public_html/localhost
+	DocumentRoot /home/ma/public_html/localhost
 	ServerAdmin webmaster@localhost
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
@@ -734,7 +763,7 @@ sudo systemctl restart apache2.service
 ```
 
 &nbsp;<br />
-Verifique se a página está sendo servida corretamente a partir da nova pasta (~/Documents/public_html/localhost/)
+Verifique se a página está sendo servida corretamente a partir da nova pasta (~/public_html/localhost/)
 ```console
 curl -Lks http://localhost | egrep -i ".+Apache.+works.+"
 ```
@@ -788,7 +817,7 @@ Troque o conteúdo do arquivo por este aqui:
 </VirtualHost>
 <VirtualHost *:443>
 	ServerName localhost
-	DocumentRoot /home/ma/Documents/public_html/localhost
+	DocumentRoot /home/ma/public_html/localhost
 	ServerAdmin webmaster@localhost
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
@@ -847,7 +876,7 @@ Insira o seguinte conteúdo:
 </VirtualHost>
 <VirtualHost *:443>
 	ServerName localhost
-	DocumentRoot /home/ma/Documents/public_html/localhost
+	DocumentRoot /home/ma/public_html/localhost
 	ServerAdmin webmaster@localhost
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
@@ -945,7 +974,7 @@ Insira o seguinte conteúdo:
 server {
     listen 80;
     server_name localhost;
-    root /home/ma/Documents/public_html/localhost;
+    root /home/ma/public_html/localhost;
     index index.php index.html index.htm;
     location / {
         try_files $uri $uri/ /index.php$is_args$args;
@@ -1047,7 +1076,7 @@ O conteúdo do arquivo passa ser este:
 server {
 	server_name localhost;
 	listen 127.0.0.1:443 ssl;
-	root /home/ma/Documents/public_html/localhost;
+	root /home/ma/public_html/localhost;
 	index index.php index.html index.htm;
 	location / {
 		try_files $uri $uri/ /index.php$is_args$args;
@@ -1209,7 +1238,7 @@ Insira as configurações abaixo e salve o arquivo
 Vamos fazer nossa primeira edição no código fonte do site pelo VSCODE.
 
 Abra o arquivo:
-File > Open Folder > ~/Documents/public_html Clique em "Yes, I thrust the authors", depois abra o arquivo phpinfo/index.php.
+File > Open Folder > ~/public_html Clique em "Yes, I thrust the authors", depois abra o arquivo phpinfo/index.php.
 
 Edite-o de forma que ele fique assim:
 ```php
@@ -1262,11 +1291,11 @@ Agora Teste o debugger com o PHP8.0 e a configuração estará completa.
 &nbsp;<br />
 Esse é o script que vai orquestrar tudo o que foi instalado aqui, subindo seletivamente os serviços de acordo com o parametro recebido:
 
-Baixe o arquivo **lampconfig.sh** para `/home/ma/Documents`
+Baixe o arquivo **lampconfig.sh** para `/home/ma`
 
 Conceda permissão de execução:
 ```console
-chown ma:ma /home/ma/Documents/lampconfig.sh && sudo chmod 750 /home/ma/Documents/lampconfig.sh
+chown ma:ma /home/ma/lampconfig.sh && sudo chmod 750 /home/ma/lampconfig.sh
 ```
 Obs: Lembrando mais uma vez que você deve trocar **ma** pelo seu usuário.
 
@@ -1274,7 +1303,7 @@ Obs: Lembrando mais uma vez que você deve trocar **ma** pelo seu usuário.
 
 Para subir a stack desejada, siga a sintaxe do comando abaixo:
 ```console
-sudo ~/Documents/lampconfig.sh "apache php7 mysql5 xdebugoff"
+sudo ~/lampconfig.sh "apache php7 mysql5 xdebugoff"
 ```
 As opções são:
 ```
@@ -1322,10 +1351,10 @@ Email Address []: webmaster@teste.dev.br
 
 Crie uma nova pasta de publicação e o arquivo de teste:
 ```console
-mkdir ~/Documents/public_html/teste.dev.br
+mkdir ~/public_html/teste.dev.br
 ```
 ```console
-echo '<?php phpinfo(); ?>' > ~/Documents/public_html/teste.dev.br/index.php
+echo '<?php phpinfo(); ?>' > ~/public_html/teste.dev.br/index.php
 ```
 
 &nbsp;<br />
@@ -1344,7 +1373,7 @@ Insira o seguinte conteúdo:
 </VirtualHost>
 <VirtualHost *:443>
 	ServerName teste.dev.br
-	DocumentRoot /home/ma/Documents/public_html/teste.dev.br
+	DocumentRoot /home/ma/public_html/teste.dev.br
 	ServerAdmin webmaster@teste.dev.br
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
@@ -1388,7 +1417,7 @@ Insira este conteúdo:
 server {
 	server_name teste.dev.br;
 	listen 127.0.0.1:443 ssl;
-	root /home/ma/Documents/public_html/teste.dev.br;
+	root /home/ma/public_html/teste.dev.br;
 	index index.php index.html index.htm;
 	location / {
 		try_files $uri $uri/ /index.php$is_args$args;
@@ -1422,7 +1451,7 @@ sudo sed -i -E 's/7\.4/8.0/' /etc/nginx/sites-available/teste.dev.br_php8.0
 
 Edite o arquivo lampconfig.sh
 ```console
-editor ~/Documents/lampconfig.sh
+editor ~/lampconfig.sh
 ```
 Na linha 4, adicione o domínio na variavel **servername**:
 ```
@@ -1439,7 +1468,7 @@ O script **lampconfig.sh** faz os ajustes necessarios, inserindo, comentando e d
 ### Startando a stack desejada, exemplo:
 
 ```console
-sudo ~/Documents/lampconfig.sh "nginx php7 mysql5"
+sudo ~/lampconfig.sh "nginx php7 mysql5"
 ```
 
 Mensagens de retorno:
@@ -1471,7 +1500,7 @@ xdebug 8.0 OFF
 
 Edite o arquivo lampconfig.sh
 ```console
-editor ~/Documents/lampconfig.sh
+editor ~/lampconfig.sh
 ```
 Na linha 4, remova o domínio na variavel **servername**:
 ```
@@ -1480,7 +1509,7 @@ servernames="localhost"
 
 Aplique as configurações, subindo uma stack, como no exemplo:
 ```console
-sudo ~/Documents/lampconfig.sh "apache php7 mysql5"
+sudo ~/lampconfig.sh "apache php7 mysql5"
 ```
 
 Para criar outros domínios, o processo é análogo a este.
