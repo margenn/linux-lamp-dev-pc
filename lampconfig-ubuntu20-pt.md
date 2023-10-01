@@ -863,6 +863,15 @@ sudo systemctl restart apache2.service
 ```
 
 &nbsp;<br />
+Garanta que ambas as versões do PHP estão ativas:
+```console
+sudo systemctl start php7.4-fpm.service && systemctl status php7.4-fpm.service
+```
+```console
+sudo systemctl start php8.0-fpm.service && systemctl status php8.0-fpm.service
+```
+
+&nbsp;<br />
 Altere os arquivos de configuração para que o Apache reconheça o PHP
 ```console
 sudo editor /etc/apache2/sites-available/localhost_php7.4.conf
@@ -918,7 +927,7 @@ Você deverá ver uma tela assim na versao PHP7.4 e algo semelhante para o PHP8.
 &nbsp;<br />
 Agora que seu Apache funciona com HTTPS, PHP7 e PHP8, vamos stopar o serviço e desabilitar o start automático para que não entre em conflito com o NGINX.
 ```console
-sudo systemctl stop apache2.service && sudo systemctl disable apache2.service
+sudo systemctl disable --now apache2.service
 ```
 
 &nbsp;<br />
@@ -954,11 +963,16 @@ Accept-Ranges: bytes
 &nbsp;<br />
 ### Configurando PHP no NGINX
 
+
 &nbsp;<br />
-Edite o arquivo /etc/nginx/nginx.conf
+Edite o arquivo de configuração do NGINX
+&nbsp;<br />
+```console
+sudo editor /etc/nginx/nginx.conf
+```
 Insira as linhas abaixo dentro da diretiva "http {...}"
 ```
-# evitar erro 504 ao depurar php
+# evite erro 504 ao depurar php
 fastcgi_connect_timeout 75;
 fastcgi_send_timeout 600;
 fastcgi_read_timeout 600;
@@ -1006,19 +1020,21 @@ Desative o site default. Ele não será mais necessário.
 ```console
 sudo unlink /etc/nginx/sites-enabled/default
 ```
-```console
-sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default_backup
-```
 
 &nbsp;<br />
 Reinicie o servidor com PHP7 depois com PHP8 usando este dois comandos.
 ```console
 sudo ln -sf ../sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
+Abra este dois sites no navegador: http://localhost e http://localhost/phpinfo e verifique se estas páginas estão sendo servidas.
+
 ```console
 sudo ln -sf ../sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
-Logo após a execução de cada comando acima, abra este dois sites no navegador: http://localhost e http://localhost/phpinfo para verificar se o NGINX funciona com ambas versões do PHP.
+Abra este dois sites no navegador: http://localhost e http://localhost/phpinfo e verifique se estas páginas estão sendo servidas.
+
+
+
 
 &nbsp;<br />
 ### Instalando certificado SSL no NGINX (HTTPS)
@@ -1028,7 +1044,7 @@ Crie um arquivo DIFFIE-HELLMAN (DH).
 ```console
 sudo openssl dhparam -out /etc/nginx/dhparam.pem 4096
 ```
-Obs: O processamento deste comando pode levar varios minutos.
+Obs: O processamento deste comando pode levar **vários minutos**.
 
 &nbsp;<br />
 Crie um snippet para comportar o atalho para os arquivos do certificado.
@@ -1115,15 +1131,17 @@ Reinicie o servidor com PHP7 depois com PHP8 usando este dois comandos.
 ```console
 sudo ln -sf /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
+Para verificar que a página php está funcionando via https, abra o endereço https://localhost/phpinfo no navegador.
+
 ```console
 sudo ln -sf /etc/nginx/sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
-Logo após a execução de cada comando acima, abra este dois sites no navegador: https://localhost e https://localhost/phpinfo para verificar se ambas as versões do PHP estão OK.
+Abra novamente https://localhost/phpinfo e verifique que agora o NGINX está chamando o PHP 8.0
 
 &nbsp;<br />
 Tudo certo com a configuração do NGINX. Desabilite a inicialização automática e pare o serviço:
 ```console
-sudo systemctl stop nginx.service && sudo systemctl disable nginx.service
+sudo systemctl disable --now nginx.service
 ```
 
 &nbsp;<br />
@@ -1169,9 +1187,11 @@ Inicie o NGINX com o PHP7.4. Para isso, execute estes comandos para Parar, Troca
 ```console
 sudo systemctl stop nginx.service && sudo systemctl stop php7.4-fpm.service
 ```
+Mude a versão do executável do php para que debugger encontre o executável correto.
 ```console
 sudo update-alternatives --set php /usr/bin/php7.4
 ```
+Faça o NGINX ler as configurações do PHP 7.4 alterando o caminho do symlink. Inicie os serviços NGINX e o PHP
 ```console
 sudo ln -sf /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl start php7.4-fpm.service && sudo systemctl start nginx.service
 ```
@@ -1222,13 +1242,10 @@ Depois clique em **Edit in settings.json**
 
 &nbsp;<br />
 Insira as configurações abaixo e salve o arquivo
+
 ```
-{
-    "workbench.colorTheme": "Default Dark Modern",
-    "php.debug.executablePath": "/usr/bin/php",
-    "security.workspace.trust.untrustedFiles": "open",
-    "php.debug.ideKey": "VSCODE"
-}
+"php.debug.executablePath": "/usr/bin/php",
+"php.debug.ideKey": "VSCODE"
 ```
 
 &nbsp;<br />
@@ -1305,19 +1322,11 @@ Para subir a stack desejada, siga a sintaxe do comando abaixo:
 ```console
 sudo ~/lampconfig.sh "apache php7 mysql5 xdebugoff"
 ```
-As opções são:
-```
-"apache php7 mysql5"
-"apache php7 mysql8"
-"apache php8 mysql5"
-"apache php8 mysql8"
-"nginx php7 mysql5"
-"nginx php7 mysql8"
-"nginx php8 mysql5"
-"nginx php8 mysql8"
-```
-
-*Obs: O parametro xdebugon/xdebugoff é opcional. Quando omitido, seu estado é ON por default.*
+É possível quaisquer combinações destes 4 elementos:
+- **apache** ou **nginx**
+- **php7** ou **php8**
+- **mysql5** opu **mysql8**
+- **xdebugon** ou **xdebugoff** (quando omitido, assume-se **xdebugon**)
 
 
 &nbsp;<br />
