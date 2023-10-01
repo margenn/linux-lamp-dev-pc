@@ -1317,7 +1317,7 @@ chown ma:ma /home/ma/lampconfig.sh && sudo chmod 750 /home/ma/lampconfig.sh
 Obs: Lembrando mais uma vez que você deve trocar **ma** pelo seu usuário.
 
 
-
+&nbsp;<br />
 Para subir a stack desejada, siga a sintaxe do comando abaixo:
 ```console
 sudo ~/lampconfig.sh "apache php7 mysql5 xdebugoff"
@@ -1327,6 +1327,13 @@ sudo ~/lampconfig.sh "apache php7 mysql5 xdebugoff"
 - **php7** ou **php8**
 - **mysql5** opu **mysql8**
 - **xdebugon** ou **xdebugoff** (quando omitido, assume-se **xdebugon**)
+
+
+&nbsp;<br />
+Para desligar todos os serviços, use o parâmetro "turnoffall"
+```console
+sudo ~/lampconfig.sh "turnoffall"
+```
 
 
 &nbsp;<br />
