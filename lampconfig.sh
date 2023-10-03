@@ -143,14 +143,12 @@ for servername in $SERVERNAMES; do
 	if [[ $servername != "localhost" ]]; then
 		regexLine="127.0.0.1\s*$servername"
 		line=$(cat /etc/hosts | grep $regexLine)
-		# echo $line
 		if ! [[ -n "$line" ]]; then # empty?
 			# insert new entry after "127.0.0.1 localhost"
 			sed -i -E "/127.0.0.1\\s+localhost/a 127.0.0.1\\t$servername" /etc/hosts
 		else
 			commentedRegex="^#\s*"
 			if [[ "$line" =~ $commentedRegex ]]; then
-				echo $line
 				# uncomment line
 				sed -i -E "s/^#\s*($regexLine)/\1/" /etc/hosts
 			fi
