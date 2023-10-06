@@ -764,7 +764,7 @@ sudo editor /etc/apache2/sites-available/localhost.conf
 &nbsp;<br />
 Adicione este conteúdo ao arquivo e salve-o:
 ```
-<VirtualHost *:80>
+<VirtualHost 127.0.0.1:80>
 	ServerName localhost
 	DocumentRoot /home/ma/public_html/localhost
 	ServerAdmin webmaster@localhost
@@ -837,11 +837,11 @@ sudo editor /etc/apache2/sites-available/localhost.conf
 &nbsp;<br />
 Troque o conteúdo do arquivo por este aqui:
 ```
-<VirtualHost *:80>
+<VirtualHost 127.0.0.1:80>
 	ServerName localhost
 	Redirect permanent / https://localhost/
 </VirtualHost>
-<VirtualHost *:443>
+<VirtualHost 127.0.0.1:443>
 	ServerName localhost
 	DocumentRoot /home/ma/public_html/localhost
 	ServerAdmin webmaster@localhost
@@ -907,11 +907,11 @@ sudo editor /etc/apache2/sites-available/localhost_php7.4.conf
 Insira o seguinte conteúdo:
 
 ```
-<VirtualHost *:80>
+<VirtualHost 127.0.0.1:80>
 	ServerName localhost
 	Redirect permanent / https://localhost/
 </VirtualHost>
-<VirtualHost *:443>
+<VirtualHost 127.0.0.1:443>
 	ServerName localhost
 	DocumentRoot /home/ma/public_html/localhost
 	ServerAdmin webmaster@localhost
@@ -1378,6 +1378,7 @@ Para desligar todos os serviços, use o parâmetro "turnoffall"
 ```console
 sudo ~/lampconfig.sh "turnoffall"
 ```
+Ao desligar os serviços, todos os sites diferentes de "localhost" que apontam para 127.0.0.1 serão comentados no arquivo /etc/hosts
 
 
 &nbsp;<br />
@@ -1433,11 +1434,11 @@ sudo editor /etc/apache2/sites-available/teste.dev.br_php7.4.conf
 Insira o seguinte conteúdo:
 
 ```
-<VirtualHost *:80>
+<VirtualHost 127.0.0.1:80>
 	ServerName teste.dev.br
 	Redirect permanent / https://teste.dev.br/
 </VirtualHost>
-<VirtualHost *:443>
+<VirtualHost 127.0.0.1:443>
 	ServerName teste.dev.br
 	DocumentRoot /home/ma/public_html/teste.dev.br
 	ServerAdmin webmaster@teste.dev.br

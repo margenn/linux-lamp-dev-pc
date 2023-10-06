@@ -15,12 +15,49 @@ RED='\033[1;31m';GREEN='\033[1;32m';BLUE='\033[1;34m';NOCOLOR='\033[0m'
 # FUNCTIONS
 
 stopAllServices() {
-	for srvc in $SERVICES;do
+	for srvc in $1;do
 		if service --status-all | grep -Fiq "${srvc}"; then
 			echo -e "${BLUE}Stopping ${srvc}${NOCOLOR}"
 			systemctl stop ${srvc}.service
 		fi
 	done
+}
+
+commentOtherHostsPointingToHome() {
+	while read line; do
+		# comment orphan lines without a servername
+		if [[ "$line" =~ "127.0.0.1" ]]; then # only localhost ipv4
+			servernameFound=false
+			for servername in $1; do
+				if [[ $servername != "localhost" ]]; then
+					if [[ "$line" =~ $servername ]]; then
+						servernameFound=true
+						break
+					fi
+				fi
+			done
+			if [[ "$servernameFound" = false ]]; then
+				# this line does not have a servername, comment it
+				if ! [[ $line =~ localhost ]]; then
+					commentedRegex='^#.+'
+					if ! [[ "$line" =~ $commentedRegex ]]; then
+						orphanHostname=$(echo "$line" | sed -E "s/.+\s+(\S+)/\1/") # extract last word (webserver)
+						# comment unused local dns
+						sed -i "/$orphanHostname/ s/./# &/" /etc/hosts # comment line
+					fi
+				fi
+			fi
+		fi
+	done </etc/hosts # loop lines of this file
+}
+
+showHostsPointingToHome() {
+	echo
+	echo -e "${BLUE}############ /etc/hosts: hosts pointing to 127.0.0.1 ############"
+	while read line; do
+		if [[ "$line" =~ "127.0.0.1" ]]; then echo -e "$line"; fi
+	done </etc/hosts
+	echo -e "#################################################################${NOCOLOR}"
 }
 
 ################################################################################
@@ -33,10 +70,13 @@ fi
 # parameters to lowercase
 parameters=$(echo $1 | tr '[:upper:]' '[:lower:]')
 
-# if parameters contains "turnoffall", just shutdown all services and exit
+# if parameters contains "turnoffall", just shutdown all services, comment all hosts pointing to 127.0.0.1 and exit
 if [[ $parameters = *"turnoffall"* ]]; then
 	echo -e "${GREEN}Turning Off all services and exititing..."
-	stopAllServices; exit 0
+	stopAllServices "$SERVICES"
+	commentOtherHostsPointingToHome "localhost" #everything different than localhost will commented
+	showHostsPointingToHome
+	exit 0
 fi
 
 # find choosen stack
@@ -69,8 +109,7 @@ else
 fi
 
 # START ENVIRONMENT CONFIGURATION
-
-stopAllServices
+stopAllServices "$SERVICES"
 
 # apache configuration file has extension = '.conf'
 conf=$(if [[ $webserver == *"apache"* ]]; then echo ".conf"; else echo ""; fi)
@@ -113,31 +152,8 @@ systemctl start ${database}.service
 if [ $? -eq 0 ]; then echo -e "${GREEN}[${database}] Started${NOCOLOR}"; else echo -e "${RED}ERROR:[${database}].${NOCOLOR}" && exit 1; fi
 
 # change /etc/hosts according to SERVERNAMES
-while read line; do
-	# comment orphan lines without a servername
-	if [[ "$line" =~ "127.0.0.1" ]]; then # only localhost ipv4
-		servernameFound=false
-		for servername in $SERVERNAMES; do
-			if [[ $servername != "localhost" ]]; then
-				if [[ "$line" =~ $servername ]]; then
-					servernameFound=true
-					break
-				fi
-			fi
-		done
-		if [[ "$servernameFound" = false ]]; then
-			# this line does not have a servername, comment it
-			if ! [[ $line =~ localhost ]]; then
-				commentedRegex='^#.+'
-				if ! [[ "$line" =~ $commentedRegex ]]; then
-					orphanHostname=$(echo "$line" | sed -E "s/.+\s+(\S+)/\1/") # extract last word (webserver)
-					# comment unused local dns
-					sed -i "/$orphanHostname/ s/./# &/" /etc/hosts # comment line
-				fi
-			fi
-		fi
-	fi
-done </etc/hosts
+commentOtherHostsPointingToHome "$SERVERNAMES"
+
 # insert/uncoment lines with servername
 for servername in $SERVERNAMES; do
 	if [[ $servername != "localhost" ]]; then
@@ -156,9 +172,6 @@ for servername in $SERVERNAMES; do
 	fi
 done
 
-echo
-echo -e "${BLUE}############ /etc/hosts: hosts pointing to 127.0.0.1 ############"
-while read line; do
-	if [[ "$line" =~ "127.0.0.1" ]]; then echo -e "$line"; fi
-done </etc/hosts
-echo -e "#################################################################${NOCOLOR}"
+showHostsPointingToHome
+
+exit 0
