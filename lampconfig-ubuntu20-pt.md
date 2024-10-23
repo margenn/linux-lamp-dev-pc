@@ -1,7 +1,7 @@
-## LINUX UBUNTU 20.04 LAMP/LEMP DEV SERVER
+# LINUX UBUNTU 20.04 LAMP/LEMP DEV SERVER
 
 
-### Passo a Passo: Configurando um ambiente de desenvolvimento [LAMP](https://en.wikipedia.org/wiki/LAMP_%28software_bundle%29)/[LEMP](https://lemp.io/) no Ubuntu 20.04:
+## Passo a Passo: Configurando um ambiente de desenvolvimento [LAMP](https://en.wikipedia.org/wiki/LAMP_%28software_bundle%29)/[LEMP](https://lemp.io/) no Ubuntu 20.04:
 
 
 - MYSQL8.0 [🔗](#mysql-80)
@@ -17,16 +17,16 @@
 
 
 &nbsp;<br />
-## INTRODUÇÃO
+# INTRODUÇÃO
 
 
 &nbsp;<br />
 Após seguir as instruções, será possível mudar o stack de desenvolvimento com apenas um comando, como neste exemplo:
-```console
+```sh
 sudo ~/lampconfig.sh "nginx php7.4 mysql5.7 xdebugon"
 ```
 Ou ainda:
-```console
+```sh
 sudo ~/lampconfig.sh "apache php8 mysql8 xdebugoff"
 ```
 Diferente das soluções baseadas em container, aqui, as aplicações são instaladas de forma nativa. O controle é feito pelo script **lampconfig.sh**.
@@ -49,7 +49,7 @@ Setup utilizado: [VirtualBox](https://www.virtualbox.org/), [Xubuntu 20.04](http
 
 
 &nbsp;<br />
-## MYSQL 8.0
+# MYSQL 8.0
 
 
 &nbsp;<br />
@@ -65,78 +65,78 @@ IMPORTANTE! Instale o MYSQL8.0 antes do MYSQL5.7 pois alguns comandos de inicial
 
 
 &nbsp;<br />
-### Compilando o MYSQL 8.0
+## Compilando o MYSQL 8.0
 
 
 &nbsp;<br />
 Instale os pacotes necessários para a compilação:
 
-```console
+```sh
 sudo apt install cmake build-essential openssl libssl-dev libncurses5-dev bison
 ```
 
 &nbsp;<br />
 Crie o usuário e grupo mysql:
 
-```console
+```sh
 sudo groupadd mysql && sudo useradd -r -g mysql -s /bin/false mysql
 ```
 
 &nbsp;<br />
 Crie a pasta onde os fontes serão descompactados
 
-```console
+```sh
 mkdir ~/Documents/mysql8-sources && cd ~/Documents/mysql8-sources
 ```
 
 &nbsp;<br />
 Baixe o código fonte:
 
-```console
+```sh
 wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.34.tar.gz
 ```
 
 &nbsp;<br />
 Descompacte os fontes e crie a pasta que receberá os arquivos do build
 
-```console
+```sh
 tar zxvf mysql-8.0.34.tar.gz && cd mysql-8.0.34 && mkdir bld && cd bld
 ```
 
 &nbsp;<br />
 Prepare a compilação. A pasta de instalação default do MYSQL é a /usr/local/mysql. Aqui, vamos alterar essa pasta para /usr/local/mysql8.0 permitindo assim que outras versões sejam instaladas.
-```console
+```sh
 sudo cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local/mysql8.0 -DDOWNLOAD_BOOST=1 -DWITH_BOOST=$HOME/my_boost
 ```
 Obs: Diferente de uma instalação convencional via apt que cria arquivos em diversas pastas (/etc, /var, /usr). A instalação por código fonte direciona todos os arquivos para um só lugar. Executáveis, Dados, Configuração, etc. Tudo ficará na pasta /usr/local/mysql8.0
 
 &nbsp;<br />
 Compile os fontes.
-```console
+```sh
 sudo make
 ```
 Obs: Esse processamento leva cerca de meia hora. Você irá ver algumas mensagens coloridas passando pela sua tela..
 
 &nbsp;<br />
 Instale:
-```console
+```sh
 sudo make install
 ```
 
 
 &nbsp;<br />
-### Configurando o MYSQL 8.0
+## Configurando o MYSQL 8.0
 
 
 &nbsp;<br />
 Vá para a pasta de instalação e crie a sub-pasta que receberá os arquivos de dados criados na inicialização.
-```console
+```sh
 cd /usr/local/mysql8.0 && sudo mkdir mysql-files && sudo chown mysql:mysql mysql-files && sudo chmod 750 mysql-files
 ```
 
 &nbsp;<br />
 Inicialize os arquivos de dados
-```console
+```sh
 sudo /usr/local/mysql8.0/bin/mysqld --initialize --user=mysql
 ```
 
@@ -146,42 +146,42 @@ A mensagem com a senha é parecida com esta: `[Server] A temporary password is g
 
 &nbsp;<br />
 Configure a conexão segura. (Ignore o Warning).
-```console
+```sh
 sudo /usr/local/mysql8.0/bin/mysql_ssl_rsa_setup
 ```
 
 &nbsp;<br />
 Inicie o serviço manualmente para verificar se tudo está em ordem:
-```console
+```sh
 sudo /usr/local/mysql8.0/bin/mysqld_safe --user=mysql &
 ```
 Obs: o **&** no final do comando serve para o processo rodar em background não travar o terminal.
 
 &nbsp;<br />
 Faça seu primeiro login. Usando como exemplo, a senha recebida acima, perceba que o caractere '**/**' está precedido por '**\\**'. Troque esta senha pela que você anotou na etapa anterior.
-```console
+```sh
 /usr/local/mysql8.0/bin/mysql -uroot -pSW\/Oitry6vx\\<
 ```
 
 &nbsp;<br />
 Uma vez logado no mysql, altere para uma senha de sua preferência. Como este é um servidor de desenvolvimento, vamos usar '1234'.
-```console
+```sh
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '1234';
 exit
 ```
 
 &nbsp;<br />
 Refaça o login para testar a sua nova senha:
-```console
+```sh
 /usr/local/mysql8.0/bin/mysql -uroot -p1234
 ```
-```console
+```sh
 exit
 ```
 
 &nbsp;<br />
 O MYSQL subiu com as configurações default. Para customizar seu funcionamento, precisamos criar um arquivo de configuração:
-```console
+```sh
 cd /usr/local/mysql8.0 && sudo touch my.cnf && sudo chmod 644 my.cnf && sudo editor /usr/local/mysql8.0/my.cnf
 ```
 
@@ -195,39 +195,39 @@ character-set-server = utf8
 
 &nbsp;<br />
 Vamos copiar o script de controle para a pasta **/etc/init.d/**. Isso é necessário para que você possa iniciar e parar o banco de dados de uma forma padronizada, via **systemctl**.
-```console
+```sh
 sudo cp /usr/local/mysql8.0/support-files/mysql.server /etc/init.d/mysql8.0 && sudo chmod +x /etc/init.d/mysql8.0
 ```
 
 &nbsp;<br />
 Reinicie o banco de dados e verifique seu status, executando diretamente o script instalado:
-```console
+```sh
 sudo sh /etc/init.d/mysql8.0 restart && sudo sh /etc/init.d/mysql8.0 status
 ```
 
 &nbsp;<br />
 Faça o systemctl reconhecer o novo serviço instalado:
-```console
+```sh
 sudo systemctl daemon-reload
 ```
 
 &nbsp;<br />
 Agora reinicie o banco de dados usando o systemctl:
-```console
+```sh
 sudo systemctl restart mysql8.0.service && sudo systemctl status mysql8.0.service
 ```
 
 
 &nbsp;<br />
-### Limpando arquivos temporários MYSQL 8.0
+## Limpando arquivos temporários MYSQL 8.0
 
 
 &nbsp;<br />
 Caso não tenha ocorrido nenhum erro, seu banco de dados foi instalado com sucesso. Os fontes e o pacote de testes podem ser opcionalmente apagados com estes dois comandos:
-```console
+```sh
 sudo rm -R ~/Documents/mysql8-sources
 ```
-```console
+```sh
 sudo rm -R /usr/local/mysql8.0/mysql-test
 ```
 
@@ -235,13 +235,13 @@ Obs: Diferente do MYSQL5.7, a pasta /usr/local/mysql8.0/lib não pode ser removi
 
 &nbsp;<br />
 Pare o banco de dados para evitar conflito com a próxima instalação:
-```console
+```sh
 sudo systemctl stop mysql8.0.service
 ```
 
 
 &nbsp;<br />
-## MYSQL 5.7
+# MYSQL 5.7
 
 
 &nbsp;<br />
@@ -253,58 +253,58 @@ O usuário e grupo **mysql** também já foram criados no passo anterior.
 
 
 &nbsp;<br />
-### Compilando o MYSQL 5.7
+## Compilando o MYSQL 5.7
 
 
 &nbsp;<br />
 Crie a pasta onde os fontes serão descompactados:
-```console
+```sh
 mkdir ~/Documents/mysql5-sources && cd ~/Documents/mysql5-sources
 ```
 
 &nbsp;<br />
 Baixe os fontes:
-```console
+```sh
 wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.43.tar.gz
 ```
 
 &nbsp;<br />
 Descompacte os fontes e crie a pasta que receberá o build:
-```console
+```sh
 tar zxvf mysql-5.7.43.tar.gz && cd mysql-5.7.43 && mkdir bld && cd bld
 ```
 &nbsp;<br />
 Prepare a compilação.
-```console
+```sh
 sudo cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local/mysql5.7 -DDOWNLOAD_BOOST=1 -DWITH_BOOST=$HOME/my_boost
 ```
 
 &nbsp;<br />
 Compile os fontes:
-```console
+```sh
 sudo make
 ```
 Obs: Esse processamento leva cerca de meia hora.
 
 &nbsp;<br />
 Instale:
-```console
+```sh
 sudo make install
 ```
 
 &nbsp;<br />
-### Configurando o MYSQL 5.7
+## Configurando o MYSQL 5.7
 
 
 &nbsp;<br />
 Vá para a pasta de instalação e crie a sub-pasta onde ficarão os arquivos de dados
-```console
+```sh
 cd /usr/local/mysql5.7 && sudo mkdir mysql-files && sudo chown mysql:mysql mysql-files && sudo chmod 750 mysql-files
 ```
 
 &nbsp;<br />
 Inicialize os arquivos de dados
-```console
+```sh
 sudo /usr/local/mysql5.7/bin/mysqld --initialize --user=mysql
 ```
 
@@ -316,20 +316,20 @@ Exemplo de mensagem:
 
 &nbsp;<br />
 Configure a conexão segura.
-```console
+```sh
 sudo /usr/local/mysql5.7/bin/mysql_ssl_rsa_setup
 ```
 Ignore a mensagem de warning.
 
 &nbsp;<br />
 Inicie o serviço manualmente para verificar se tudo está em ordem:
-```console
+```sh
 sudo /usr/local/mysql5.7/bin/mysqld_safe --user=mysql &
 ```
 
 &nbsp;<br />
 Faça seu primeiro login. Caso a senha recebida não funcione, insira '\\' antes dos caracteres especiais. Substitua *GeneratedTemporaryPassword* pela senha que recebeu durante o processo de inicialização do banco.
-```console
+```sh
 /usr/local/mysql5.7/bin/mysql -uroot -pGeneratedTemporaryPassword
 ```
 
@@ -351,23 +351,23 @@ mysql>
 
 &nbsp;<br />
 Uma vez logado no mysql, altere para uma senha de sua preferência. Como este é um servidor de desenvolvimento, uma senha '1234' não será problema.
-```console
+```sh
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '1234';
 exit
 ```
 
 &nbsp;<br />
 Refaça o login para testar a sua nova senha:
-```console
+```sh
 /usr/local/mysql5.7/bin/mysql -uroot -p1234
 ```
-```console
+```sh
 exit
 ```
 
 &nbsp;<br />
 O MYSQL subiu com as configurações default. Para customizar seu funcionamento, precisamos criar um arquivo de configuração:
-```console
+```sh
 cd /usr/local/mysql5.7 && sudo touch my.cnf && sudo chmod 644 my.cnf && sudo editor /usr/local/mysql5.7/my.cnf
 ```
 
@@ -382,36 +382,36 @@ character-set-server = utf8
 
 &nbsp;<br />
 Registre o script de controle. Isso é necessário para que você possa iniciar e parar o banco de dados de uma forma padronizada.
-```console
+```sh
 sudo cp /usr/local/mysql5.7/support-files/mysql.server /etc/init.d/mysql5.7 && sudo chmod +x /etc/init.d/mysql5.7
 ```
 
 &nbsp;<br />
 Faça o systemctl reconhecer o novo serviço instalado:
-```console
+```sh
 sudo systemctl daemon-reload
 ```
 
 &nbsp;<br />
 Agora reinicie o banco de dados usando o systemctl:
-```console
+```sh
 sudo systemctl restart mysql5.7.service
 ```
 
 &nbsp;<br />
 Pare o banco de dados:
-```console
+```sh
 sudo systemctl stop mysql5.7.service
 ```
 
 
 &nbsp;<br />
-### Limpando os arquivos temorários MYSQL 5.7
+## Limpando os arquivos temorários MYSQL 5.7
 
 
 &nbsp;<br />
 Agora podemos apagar as bibliotecas usadas na compilação, códigos-fonte e demais arquivos desnecessários. Isto irá liberar ~10GB de espaço em disco:
-```console
+```sh
 sudo rm -R ~/Documents/mysql5-sources
 sudo rm -R ~/my_boost
 sudo rm -R /usr/local/mysql5.7/mysql-test
@@ -425,7 +425,7 @@ Lembrando que o controle da versão irá subir será feito pelo script **lampcon
 
 
 &nbsp;<br />
-## PHP 7.4
+# PHP 7.4
 
 
 &nbsp;<br />
@@ -435,18 +435,18 @@ Para que o APACHE e o NGINX possam compartilhar a mesma instância de PHP, este 
 
 
 &nbsp;<br />
-### Instalando o PHP 7.4
+## Instalando o PHP 7.4
 
 
 &nbsp;<br />
 Instale os pacotes básicos:
-```console
+```sh
 sudo apt install php7.4-fpm php7.4-mysql php7.4-gd php7.4-xml php7.4-mbstring
 ```
 
 &nbsp;<br />
 Verifique o status do serviço
-```console
+```sh
 systemctl status php7.4-fpm.service
 ```
 
@@ -470,17 +470,17 @@ Caso o serviço esteja OK, você deverá ver uma mensagem assim:
 
 
 &nbsp;<br />
-### Configurando o PHP 7.4
+## Configurando o PHP 7.4
 
 
 &nbsp;<br />
 Edite o arquivo de configuração do serviço e faça alterações em alguns parâmetros conforme mostrado:
-```console
+```sh
 sudo editor /etc/php/7.4/fpm/php.ini
 ```
 
 ```
-Linha 0388: max_execution_time = 600
+Linha 0388: max_execution_time = 3600
 Linha 0405: max_input_vars = 10000
 Linha 0409: memory_limit = 256M
 Linha 0482: display_errors = On
@@ -494,8 +494,8 @@ Linha 1794: opcache.validate_timestamps=1
 ```
 
 Se preferir, apenas copie e cole os comandos abaixo para fazer as alterações necessárias:
-```console
-sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 600/' /etc/php/7.4/fpm/php.ini
+```sh
+sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 3600/' /etc/php/7.4/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 10000/' /etc/php/7.4/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(memory_limit ?=).{0,10}$/\1 256M/' /etc/php/7.4/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(display_errors ?=).{0,10}$/\1 On/' /etc/php/7.4/fpm/php.ini
@@ -510,55 +510,55 @@ sudo sed -i -E 's/^.{0,2}(opcache\.validate_timestamps ?=).{0,10}$/\1 1/' /etc/p
 
 &nbsp;<br />
 Confira as alteracoes
-```console
+```sh
 grep -wns '\(max_execution_time\|max_input_vars\|memory_limit\|display_errors\|display_startup_errors\|post_max_size\|upload_max_filesize\|default_socket\|opcache\.enable\|validate_timestamps\) *=' /etc/php/7.4/fpm/php.ini
 ```
 
 &nbsp;<br />
 Reinicie e verifique o status do serviço
-```console
+```sh
 sudo systemctl restart php7.4-fpm.service && systemctl status php7.4-fpm.service
 ```
 
 &nbsp;<br />
 Tudo certo, podemos parar e desabilitar o serviço
-```console
+```sh
 sudo systemctl disable --now php7.4-fpm.service
 ```
 
 
 &nbsp;<br />
-## PHP 8.0
+# PHP 8.0
 
 
 &nbsp;<br />
-### Configurando um novo PPA
+## Configurando um novo PPA
 
 
 &nbsp;<br />
 Prepare a adição de um novo PPA (Personal Package Archive). PPAs permitem a instalação de softwares de repositórios alternativos.
-```console
+```sh
 sudo apt install software-properties-common
 ```
-```console
+```sh
 sudo add-apt-repository ppa:ondrej/php
 ```
 Obs: O segundo comando retornará uma longa mensagem com alguns avisos. Apenas tecle [ENTER] para prosseguir.
 
 
 &nbsp;<br />
-### Instalando o PHP 8.0
+## Instalando o PHP 8.0
 
 
 &nbsp;<br />
 Instale os pacotes:
-```console
+```sh
 sudo apt install php8.0-fpm php8.0-mysql php8.0-gd php8.0-xml php8.0-mbstring
 ```
 
 &nbsp;<br />
 Verifique o status do serviço
-```console
+```sh
 systemctl status php8.0-fpm.service
 ```
 
@@ -582,16 +582,16 @@ Caso o serviço esteja OK, você deverá ver uma mensagem assim:
 
 
 &nbsp;<br />
-### Configurando o PHP 8.0
+## Configurando o PHP 8.0
 
 
 &nbsp;<br />
 Edite o arquivo de configuração do serviço e faça alterações em alguns parâmetros conforme mostrado:
-```console
+```sh
 sudo editor /etc/php/8.0/fpm/php.ini
 ```
 ```
-Linha 0409: max_execution_time = 600
+Linha 0409: max_execution_time = 3600
 Linha 0426: max_input_vars = 10000
 Linha 0430: memory_limit = 256M
 Linha 0503: display_errors = On
@@ -606,8 +606,8 @@ Linha 1789: opcache.validate_timestamps=1
 
 &nbsp;<br />
 Ou se preferir, apenas copie e cole os comandos abaixo:
-```console
-sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 600/' /etc/php/8.0/fpm/php.ini
+```sh
+sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 3600/' /etc/php/8.0/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 10000/' /etc/php/8.0/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(memory_limit ?=).{0,10}$/\1 256M/' /etc/php/8.0/fpm/php.ini
 sudo sed -i -E 's/^.{0,2}(display_errors ?=).{0,10}$/\1 On/' /etc/php/8.0/fpm/php.ini
@@ -622,61 +622,61 @@ sudo sed -i -E 's/^.{0,2}(opcache\.validate_timestamps ?=).{0,10}$/\1 1/' /etc/p
 
 &nbsp;<br />
 Confira as alteracoes
-```console
+```sh
 grep -wns '\(max_execution_time\|max_input_vars\|memory_limit\|display_errors\|display_startup_errors\|post_max_size\|upload_max_filesize\|default_socket\|opcache\.enable\|validate_timestamps\) *=' /etc/php/8.0/fpm/php.ini
 ```
 
 &nbsp;<br />
 Reinicie e verifique o status do serviço
-```console
+```sh
 sudo systemctl restart php8.0-fpm.service && systemctl status php8.0-fpm.service
 ```
 
 &nbsp;<br />
 Verifique qual a versao esta ativa:
-```console
+```sh
 php -v
 ```
 
 &nbsp;<br />
 Para chavear entre as versoes do PHP, use estes comandos:
-```console
+```sh
 sudo update-alternatives --set php /usr/bin/php7.4
 ```
-```console
+```sh
 sudo update-alternatives --set php /usr/bin/php8.0
 ```
 
 &nbsp;<br />
 Tudo certo, podemos parar e desabilitar o serviço
-```console
+```sh
 sudo systemctl disable --now php8.0-fpm.service
 ```
 
 
 &nbsp;<br />
-## APACHE
+# APACHE
 
 
 &nbsp;<br />
-### Instalando o Apache
+## Instalando o Apache
 
 
 &nbsp;<br />
 Instale o Apache:
-```console
+```sh
 sudo apt install apache2 libapache2-mod-fcgid
 ```
 
 &nbsp;<br />
 Instale o curl:
-```console
+```sh
 sudo apt install curl
 ```
 
 &nbsp;<br />
 Teste a instalação:
-```console
+```sh
 curl -s -I localhost
 ```
 O comando acima deverá retornar uma mensagem assim
@@ -695,12 +695,12 @@ Content-Type: text/html
 
 
 &nbsp;<br />
-### Configurando o Apache
+## Configurando o Apache
 
 
 &nbsp;<br />
 Mude a pasta de publicação de /var/www/ para ~/public_html/. Isto e necessário para que você possa editar suas aplicações pelo VSCODE sem precisar de **sudo**.
-```console
+```sh
 sudo editor /etc/apache2/apache2.conf
 ```
 
@@ -720,44 +720,44 @@ Obs: A diretiva **DirectoryIndex** é necessária para que index.php seja reconh
 &nbsp;<br />
 Ou se preferir, apenas execute os comandos abaixo para efetuar as alterações necessárias:
 
-```console
+```sh
 sudo sed -i -E '/(<Directory .var.www.?>)/a \\tDirectoryIndex index.html index.php' /etc/apache2/apache2.conf
 ```
-```console
+```sh
 sudo sed -i -E 's/(<Directory .var.www.?>)/<Directory \/home\/ma\/public_html\/>/' /etc/apache2/apache2.conf
 ```
 Verifica se as alteracoes foram feitas:
-```console
+```sh
 grep -wns '\/home\/ma\/public_html' /etc/apache2/apache2.conf -A 5
 ```
 Obs: O Comando acima mostra 5 linhas apos a linha do regex
 
 &nbsp;<br />
 Crie as páginas web usadas nos testes
-```console
+```sh
 mkdir ~/public_html && mkdir ~/public_html/localhost/
 ```
 
-```console
+```sh
 cp /var/www/html/index.html ~/public_html/localhost/
 ```
 
-```console
+```sh
 mkdir ~/public_html/localhost/phpinfo
 ```
 
-```console
+```sh
 echo '<?php phpinfo(); ?>' > ~/public_html/localhost/phpinfo/index.php
 ```
 
-```console
+```sh
 sudo chmod +x /home/ma
 ```
 
 
 &nbsp;<br />
 Crie os arquivos de configuração para o dominio localhost
-```console
+```sh
 sudo editor /etc/apache2/sites-available/localhost.conf
 ```
 
@@ -776,19 +776,19 @@ Adicione este conteúdo ao arquivo e salve-o:
 
 &nbsp;<br />
 Habilite o site criando um symbolic link para para o arquivo de configuracao do dominio **localhost**
-```console
+```sh
 sudo ln -sf /etc/apache2/sites-available/localhost.conf /etc/apache2/sites-enabled/localhost.conf
 ```
 
 &nbsp;<br />
 Reinicie o Apache:
-```console
+```sh
 sudo systemctl restart apache2.service
 ```
 
 &nbsp;<br />
 Verifique se a página está sendo servida corretamente a partir da nova pasta (~/public_html/localhost/)
-```console
+```sh
 curl -Lks http://localhost | egrep -i ".+Apache.+works.+"
 ```
 
@@ -800,12 +800,12 @@ A mensagem de retorno deverá um trecho do html da página:
 
 
 &nbsp;<br />
-### Instalando certificado SSL no Apache (HTTPS).
+## Instalando certificado SSL no Apache (HTTPS).
 
 
 &nbsp;<br />
 Crie um certificado self-signed para o dominio **localhost**
-```console
+```sh
 sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/localhost-selfsigned.key -out /etc/ssl/certs/localhost-selfsigned.crt
 ```
 
@@ -824,13 +824,13 @@ Email Address []: webmaster@localhost
 
 &nbsp;<br />
 Habilite o módulo SSL no Apache:
-```console
+```sh
 sudo a2enmod ssl && sudo systemctl restart apache2.service
 ```
 
 &nbsp;<br />
 Mude o arquivo de configuração para que o Apache encontre os arquivos do certificado e sirva as páginas em HTTPS:
-```console
+```sh
 sudo editor /etc/apache2/sites-available/localhost.conf
 ```
 
@@ -856,11 +856,11 @@ Troque o conteúdo do arquivo por este aqui:
 
 &nbsp;<br />
 Reinicie o Apache:
-```console
+```sh
 sudo systemctl restart apache2.service
 ```
 &nbsp;<br />
-```console
+```sh
 Abra o endereço https://localhost/ no navegador.
 ```
 
@@ -875,33 +875,33 @@ O Firefox irá rejeitar o certificado e barrar o carregamento da página. Para f
 
 
 &nbsp;<br />
-### Configurando PHP no Apache
+## Configurando PHP no Apache
 
 
 &nbsp;<br />
 Configure o Apache para usar o PHP via FPM
-```console
+```sh
 sudo a2dismod mpm_prefork
 ```
-```console
+```sh
 sudo a2enmod mpm_event proxy_fcgi setenvif
 ```
-```console
+```sh
 sudo systemctl restart apache2.service
 ```
 
 &nbsp;<br />
 Garanta que ambas as versões do PHP estão ativas:
-```console
+```sh
 sudo systemctl start php7.4-fpm.service && systemctl status php7.4-fpm.service
 ```
-```console
+```sh
 sudo systemctl start php8.0-fpm.service && systemctl status php8.0-fpm.service
 ```
 
 &nbsp;<br />
 Altere os arquivos de configuração para que o Apache reconheça o PHP
-```console
+```sh
 sudo editor /etc/apache2/sites-available/localhost_php7.4.conf
 ```
 Insira o seguinte conteúdo:
@@ -927,23 +927,23 @@ Insira o seguinte conteúdo:
 
 &nbsp;<br />
 Use o arquivo acima como template para criar o arquivo de configuracao do site para o php 8.0
-```console
+```sh
 sudo cp /etc/apache2/sites-available/localhost_php7.4.conf /etc/apache2/sites-available/localhost_php8.0.conf
 ```
-```console
+```sh
 sudo sed -i -E 's/7.4/8.0/' /etc/apache2/sites-available/localhost_php8.0.conf
 ```
 &nbsp;<br />
 Confira a alteracao para 8.0
-```console
+```sh
 grep -wns 'conf-available.*' /etc/apache2/sites-available/localhost_php8.0.conf
 ```
 &nbsp;<br />
 Para fazer o Apache chavear entre o PHP7 e o PHP8 utilize estes dois comandos e teste logo em seguida acessando https://localhost/phpinfo
-```console
+```sh
 sudo ln -sf /etc/apache2/sites-available/localhost_php7.4.conf /etc/apache2/sites-enabled/localhost.conf && sudo systemctl restart apache2.service
 ```
-```console
+```sh
 sudo ln -sf /etc/apache2/sites-available/localhost_php8.0.conf /etc/apache2/sites-enabled/localhost.conf && sudo systemctl restart apache2.service
 ```
 
@@ -954,28 +954,28 @@ Você deverá ver uma tela assim na versao PHP7.4 e algo semelhante para o PHP8.
 
 &nbsp;<br />
 Agora que seu Apache funciona com HTTPS, PHP7 e PHP8, vamos stopar o serviço e desabilitar o start automático para que não entre em conflito com o NGINX.
-```console
+```sh
 sudo systemctl disable --now apache2.service
 ```
 
 
 &nbsp;<br />
-## NGINX
+# NGINX
 
 
 &nbsp;<br />
-#### Instalando o NGINX
+### Instalando o NGINX
 
 
 &nbsp;<br />
 Instale o Nginx:
-```console
+```sh
 sudo apt install nginx
 ```
 
 &nbsp;<br />
 Teste se o servidor web está no ar:
-```console
+```sh
 curl -s -I localhost
 ```
 O retorno do comando acima deverá ser parecido com este:
@@ -993,27 +993,27 @@ Accept-Ranges: bytes
 
 
 &nbsp;<br />
-### Configurando PHP no NGINX
+## Configurando PHP no NGINX
 
 
 &nbsp;<br />
 Edite o arquivo de configuração do NGINX
 &nbsp;<br />
-```console
+```sh
 sudo editor /etc/nginx/nginx.conf
 ```
 Insira as linhas abaixo dentro da diretiva "http {...}"
 ```
-# evite erro 504 ao depurar php
+evite erro 504 ao depurar php
 fastcgi_connect_timeout 75;
-fastcgi_send_timeout 600;
-fastcgi_read_timeout 600;
+fastcgi_send_timeout 3600;
+fastcgi_read_timeout 3600;
 client_max_body_size 100M;
 ```
 
 &nbsp;<br />
 Crie os arquivos de configuração para o domínio localhost
-```console
+```sh
 sudo editor /etc/nginx/sites-available/localhost_php7.4
 ```
 Insira o seguinte conteúdo:
@@ -1036,51 +1036,51 @@ server {
 
 &nbsp;<br />
 Utilize o arquivo acima como template, apenas alterando a versão do PHP:
-```console
+```sh
 sudo cp /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-available/localhost_php8.0
 ```
-```console
+```sh
 sudo sed -i -E 's/7\.4/8.0/' /etc/nginx/sites-available/localhost_php8.0
 ```
 
 Confira a alteração:
-```console
+```sh
 grep -wns 'fastcgi_pass.*' /etc/nginx/sites-available/localhost_php8.0 -A 0
 ```
 
 &nbsp;<br />
 Desative o site default. Ele não será mais necessário.
-```console
+```sh
 sudo unlink /etc/nginx/sites-enabled/default
 ```
 
 &nbsp;<br />
 Reinicie o servidor com PHP7 depois com PHP8 usando este dois comandos.
-```console
+```sh
 sudo ln -sf ../sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
 Abra este dois sites no navegador: http://localhost e http://localhost/phpinfo e verifique se estas páginas estão sendo servidas.
 
-```console
+```sh
 sudo ln -sf ../sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
 Abra este dois sites no navegador: http://localhost e http://localhost/phpinfo e verifique se estas páginas estão sendo servidas.
 
 
 &nbsp;<br />
-### Instalando certificado SSL no NGINX (HTTPS)
+## Instalando certificado SSL no NGINX (HTTPS)
 
 
 &nbsp;<br />
 Crie um arquivo DIFFIE-HELLMAN (DH).
-```console
+```sh
 sudo openssl dhparam -out /etc/nginx/dhparam.pem 4096
 ```
 Obs: O processamento deste comando pode levar **vários minutos**.
 
 &nbsp;<br />
 Crie um snippet para comportar o atalho para os arquivos do certificado.
-```console
+```sh
 sudo editor /etc/nginx/snippets/localhost-certs.conf
 ```
 Insira este conteúdo:
@@ -1092,7 +1092,7 @@ Obs: Note que é o mesmo certificado usado no Apache
 
 &nbsp;<br />
 Crie um snippet para o arquivo DIFFIE-HELLMAN
-```console
+```sh
 sudo editor /etc/nginx/snippets/ssl-params.conf
 ```
 Insira o conteúdo abaixo:
@@ -1116,7 +1116,7 @@ add_header X-XSS-Protection "1; mode=block";
 
 &nbsp;<br />
 Atualize os arquivos de configuração do dominio localhost, inserindo as configurações para HTTPS
-```console
+```sh
 sudo editor /etc/nginx/sites-available/localhost_php7.4
 ```
 O conteúdo do arquivo passa ser este:
@@ -1146,55 +1146,55 @@ server {
 
 &nbsp;<br />
 Faca o mesmo para o php 8.0
-```console
+```sh
 sudo cp /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-available/localhost_php8.0
 ```
-```console
+```sh
 sudo sed -i -E 's/7\.4/8.0/' /etc/nginx/sites-available/localhost_php8.0
 ```
 Confira a alteracao
-```console
+```sh
 grep -wns 'fastcgi_pass.*' /etc/nginx/sites-available/localhost_php8.0 -A 0
 ```
 Obs: O parâmetro -A 0 define a quantidade de linhas apresentadas após o match do regex 'fastcgi_pass.*'
 
 &nbsp;<br />
 Reinicie o servidor com PHP7 depois com PHP8 usando este dois comandos.
-```console
+```sh
 sudo ln -sf /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
 Para verificar que a página php está funcionando via https, abra o endereço https://localhost/phpinfo no navegador.
 
-```console
+```sh
 sudo ln -sf /etc/nginx/sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost && sudo systemctl restart nginx.service
 ```
 Abra novamente https://localhost/phpinfo e verifique que agora o NGINX está chamando o PHP 8.0
 
 &nbsp;<br />
 Tudo certo com a configuração do NGINX. Desabilite a inicialização automática e pare o serviço:
-```console
+```sh
 sudo systemctl disable --now nginx.service
 ```
 
 
 &nbsp;<br />
-## XDEBUG
+# XDEBUG
 
 
 &nbsp;<br />
 Instale o xdebug
-```console
+```sh
 sudo apt install php7.4-xdebug php8.0-xdebug
 ```
 
 
 &nbsp;<br />
-### Configurando o XDEBUG
+## Configurando o XDEBUG
 
 
 &nbsp;<br />
 Edite o arquivo de configurações do XDEBUG para as versões 7 e 8 do PHP
-```console
+```sh
 sudo editor /etc/php/7.4/mods-available/xdebug.ini
 ```
 O arquivo deverá ficar com este conteúdo:
@@ -1211,26 +1211,26 @@ Obs: log_level é desabilitado para não criar entradas
 
 &nbsp;<br />
 Basta copiar as mesmas configurações para o PHP8.0:
-```console
+```sh
 sudo cp /etc/php/7.4/mods-available/xdebug.ini /etc/php/8.0/mods-available/xdebug.ini
 ```
 
 
 &nbsp;<br />
-### Testando a instalação do XDEBUG
+## Testando a instalação do XDEBUG
 
 
 &nbsp;<br />
 Inicie o NGINX com o PHP7.4. Para isso, execute estes comandos para Parar, Trocar a versão do PHP e configurar o NGINX:
-```console
+```sh
 sudo systemctl stop nginx.service && sudo systemctl stop php7.4-fpm.service
 ```
 Mude a versão do executável do php para que debugger encontre o executável correto.
-```console
+```sh
 sudo update-alternatives --set php /usr/bin/php7.4
 ```
 Faça o NGINX ler as configurações do PHP 7.4 alterando o caminho do symlink. Inicie os serviços NGINX e o PHP
-```console
+```sh
 sudo ln -sf /etc/nginx/sites-available/localhost_php7.4 /etc/nginx/sites-enabled/localhost && sudo systemctl start php7.4-fpm.service && sudo systemctl start nginx.service
 ```
 
@@ -1245,7 +1245,7 @@ Repita [este passo](#testando-a-instalação-do-xdebug) trocando 7.4 por 8.0
 
 
 &nbsp;<br />
-## VSCODE
+# VSCODE
 
 
 &nbsp;<br />
@@ -1253,19 +1253,19 @@ Acesse: https://code.visualstudio.com/Download
 
 &nbsp;<br />
 Baixe o instalador depois execute a instalação com este comando:
-```console
+```sh
 sudo apt install ~/Downloads/code_1.81.1-1691620686_amd64.deb
 ```
 Obs: Altere o nome do arquivo para a versão que baixou.
 
 
 &nbsp;<br />
-### Configurando o debugger do VSCODE
+## Configurando o debugger do VSCODE
 
 
 &nbsp;<br />
 Execute o Visual Studo Code e instale a extension **PHP Debug**
-```console
+```sh
 View > Extensions > Procure por "PHP Debug" na caixa de procura
 ```
 ![alt](./img/vscode-extension-phpdebug.png)
@@ -1290,7 +1290,7 @@ Insira as configurações abaixo e salve o arquivo
 
 
 &nbsp;<br />
-### Preparando o index.php
+## Preparando o index.php
 
 
 &nbsp;<br />
@@ -1309,7 +1309,7 @@ phpinfo();
 
 
 &nbsp;<br />
-### Iniciando o primeiro debug
+## Iniciando o primeiro debug
 
 
 &nbsp;<br />
@@ -1335,20 +1335,20 @@ Obs: Não é mais necessário instalar plugins do tipo "Xdebug helper" no browse
 
 &nbsp;<br />
 Inicie o NGINX com o PHP8.0 agora. Para isso, execute estes comandos:
-```console
+```sh
 sudo systemctl stop nginx.service && sudo systemctl stop php8.0-fpm.service
 ```
-```console
+```sh
 sudo update-alternatives --set php /usr/bin/php8.0
 ```
-```console
+```sh
 sudo ln -sf /etc/nginx/sites-available/localhost_php8.0 /etc/nginx/sites-enabled/localhost && sudo systemctl start php8.0-fpm.service && sudo systemctl start nginx.service
 ```
 Agora Teste o debugger com o PHP8.0 e a configuração estará completa.
 
 
 &nbsp;<br />
-## lampconfig.sh
+# lampconfig.sh
 
 
 &nbsp;<br />
@@ -1357,14 +1357,14 @@ Esse é o script que vai orquestrar tudo o que foi instalado aqui, subindo selet
 Baixe o arquivo **lampconfig.sh** para `/home/ma`
 
 Conceda permissão de execução:
-```console
+```sh
 chown ma:ma /home/ma/lampconfig.sh && sudo chmod 750 /home/ma/lampconfig.sh
 ```
 Obs: Lembrando mais uma vez que você deve trocar **ma** pelo seu usuário.
 
 &nbsp;<br />
 Para subir a stack desejada, siga a sintaxe do comando abaixo:
-```console
+```sh
 sudo ~/lampconfig.sh "apache php7 mysql5 xdebugoff"
 ```
 É possível quaisquer combinações destes 4 elementos:
@@ -1375,14 +1375,14 @@ sudo ~/lampconfig.sh "apache php7 mysql5 xdebugoff"
 
 &nbsp;<br />
 Para desligar todos os serviços, use o parâmetro "turnoffall"
-```console
+```sh
 sudo ~/lampconfig.sh "turnoffall"
 ```
 Ao desligar os serviços, todos os sites diferentes de "localhost" que apontam para 127.0.0.1 serão comentados no arquivo /etc/hosts
 
 
 &nbsp;<br />
-## Criando um novo domínio 'teste.dev.br'
+# Criando um novo domínio 'teste.dev.br'
 
 
 &nbsp;<br />
@@ -1390,11 +1390,11 @@ Em uma situação real, será necessário que o servidor de desenvolvimento util
 
 
 &nbsp;<br />
-### Certificado teste.dev.br:
+## Certificado teste.dev.br:
 
 
 Crie um certificado self-signed para o dominio **teste.dev.br**
-```console
+```sh
 sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/teste.dev.br-selfsigned.key -out /etc/ssl/certs/teste.dev.br-selfsigned.crt
 ```
 &nbsp;<br />
@@ -1411,24 +1411,24 @@ Email Address []: webmaster@teste.dev.br
 
 
 &nbsp;<br />
-### index.php teste.dev.br:
+## index.php teste.dev.br:
 
 
 Crie uma nova pasta de publicação e o arquivo de teste:
-```console
+```sh
 mkdir ~/public_html/teste.dev.br
 ```
-```console
+```sh
 echo '<?php phpinfo(); ?>' > ~/public_html/teste.dev.br/index.php
 ```
 
 
 &nbsp;<br />
-### Apache teste.dev.br:
+## Apache teste.dev.br:
 
 
 Crie os arquivos de configuração:
-```console
+```sh
 sudo editor /etc/apache2/sites-available/teste.dev.br_php7.4.conf
 ```
 Insira o seguinte conteúdo:
@@ -1454,20 +1454,20 @@ Insira o seguinte conteúdo:
 
 &nbsp;<br />
 Use o arquivo acima como template para criar o arquivo de configuracao do site para o php 8.0
-```console
+```sh
 sudo cp /etc/apache2/sites-available/teste.dev.br_php7.4.conf /etc/apache2/sites-available/teste.dev.br_php8.0.conf
 ```
-```console
+```sh
 sudo sed -i -E 's/7.4/8.0/' /etc/apache2/sites-available/teste.dev.br_php8.0.conf
 ```
 
 
 &nbsp;<br />
-### NGINX teste.dev.br:
+## NGINX teste.dev.br:
 
 
 Crie um snippet para comportar o atalho para os arquivos do certificado.
-```console
+```sh
 sudo editor /etc/nginx/snippets/teste.dev.br-certs.conf
 ```
 Insira este conteúdo:
@@ -1478,7 +1478,7 @@ ssl_certificate_key /etc/ssl/private/teste.dev.br-selfsigned.key;
 
 &nbsp;<br />
 Atualize os arquivos de configuração do dominio teste.dev.br:
-```console
+```sh
 sudo editor /etc/nginx/sites-available/teste.dev.br_php7.4
 ```
 Insira este conteúdo:
@@ -1508,20 +1508,20 @@ server {
 
 
 Faca o mesmo para o php 8.0
-```console
+```sh
 sudo cp /etc/nginx/sites-available/teste.dev.br_php7.4 /etc/nginx/sites-available/teste.dev.br_php8.0
 ```
-```console
+```sh
 sudo sed -i -E 's/7\.4/8.0/' /etc/nginx/sites-available/teste.dev.br_php8.0
 ```
 
 
 &nbsp;<br />
-### lampconfig.sh teste.dev.br
+## lampconfig.sh teste.dev.br
 
 
 Edite o arquivo lampconfig.sh
-```console
+```sh
 editor ~/lampconfig.sh
 ```
 Na linha 4, adicione o domínio na variavel **servername**:
@@ -1530,17 +1530,17 @@ servernames="localhost teste.dev.br"
 ```
 
 &nbsp;<br />
-### /etc/hosts teste.dev.br
+## /etc/hosts teste.dev.br
 
 
 O script **lampconfig.sh** faz os ajustes necessarios, inserindo, comentando e descomentando entradas de acordo com com a lista da linha 4: **servername**
 
 
 &nbsp;<br />
-### Startando a stack desejada, exemplo:
+## Startando a stack desejada, exemplo:
 
 
-```console
+```sh
 sudo ~/lampconfig.sh "nginx php7 mysql5"
 ```
 
@@ -1561,19 +1561,19 @@ xdebug 8.0 OFF
 [nginx] Started
 [mysql5.7] Started
 
-################### /etc/hosts: relevant lines ##################
+################## /etc/hosts: relevant lines ##################
 127.0.0.1	localhost
 127.0.0.1	teste.dev.br
-#################################################################
+################################################################
 ```
 
 
 &nbsp;<br />
-## Desabilitando teste.dev.br:
+# Desabilitando teste.dev.br:
 
 
 Edite o arquivo lampconfig.sh
-```console
+```sh
 editor ~/lampconfig.sh
 ```
 Na linha 4, remova o domínio na variavel **servername**:
@@ -1582,7 +1582,7 @@ servernames="localhost"
 ```
 
 Aplique as configurações, subindo uma stack, como no exemplo:
-```console
+```sh
 sudo ~/lampconfig.sh "apache php7 mysql5"
 ```
 
