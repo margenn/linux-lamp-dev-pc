@@ -472,47 +472,70 @@ Caso o serviço esteja OK, você deverá ver uma mensagem assim:
 &nbsp;<br />
 ## Configurando o PHP 7.4
 
-
 &nbsp;<br />
-Edite o arquivo de configuração do serviço e faça alterações em alguns parâmetros conforme mostrado:
+Copie o texto abaixo, cole no shell e tecle ENTER para aplicar os novos valores em alguns parâmetros do serviço PHP.
+
 ```sh
-sudo editor /etc/php/7.4/fpm/php.ini
+# Arquivo a ser modificado
+phpIni=/etc/php/7.4/fpm/php.ini
+
+if [ -e "$phpIni" ]; then
+
+	# Parametros e seus novos valores
+	novosParametros=(
+		'max_execution_time             3600'
+		'max_input_vars                 10000'
+		'memory_limit                   256M'
+		'display_errors                 On'
+		'display_startup_errors         On'
+		'post_max_size                  128M'
+		'upload_max_filesize            128M'
+		'pdo_mysql.default_socket       \/tmp\/mysql.sock'
+		'mysqli.default_socket          \/tmp\/mysql.sock'
+		'opcache\.enable                1'
+		'opcache\.validate_timestamps   1'
+		'opcache\.revalidate_freq       2'
+	)
+
+	# Aplica as modificações
+	for parametro in "${novosParametros[@]}"; do
+		cmd="sudo sed -i -E 's/^.{0,2}(${parametro% *} ?=).{0,10}$/\1 ${parametro#* }/' $phpIni"
+		echo $cmd; eval $cmd
+	done
+
+	# Apresenta as linhas modificadas para conferência
+	echo
+	echo "CONFIRA AS ALTERAÇÕES:"
+	grep -Ens '.*(max_execution_time|max_input_vars|memory_limit|display_errors|display_startup_errors|post_max_size|upload_max_filesize|default_socket|opcache.enable|validate_timestamps|revalidate_freq) *=' $phpIni
+else
+	echo "ARQUIVO INEXISTENTE!"
+fi
 ```
 
-```
-Linha 0388: max_execution_time = 3600
-Linha 0405: max_input_vars = 10000
-Linha 0409: memory_limit = 256M
-Linha 0482: display_errors = On
-Linha 0493: display_startup_errors = On
-Linha 0694: post_max_size = 100M
-Linha 0846: upload_max_filesize = 100M
-Linha 1056: pdo_mysql.default_socket = /tmp/mysql.sock
-Linha 1165: mysqli.default_socket = /tmp/mysql.sock
-Linha 1768: opcache.enable=1
-Linha 1794: opcache.validate_timestamps=1
+```sh
+# Observações:
+# O caractere '/' é um delimitador de comando no sed, então ele deve ser precedido por '\' quando usado de forma literal, por isso "\/tmp\/mysql.sock"
+# -Ens: (E)xtended Regex    Line (n)umber    (s)uppress error msgs
 ```
 
-Se preferir, apenas copie e cole os comandos abaixo para fazer as alterações necessárias:
+### Caso deseje alterar a quantidade de instâncias
+
+Edite o arquivo de configuração
+
 ```sh
-sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 3600/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 10000/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(memory_limit ?=).{0,10}$/\1 256M/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(display_errors ?=).{0,10}$/\1 On/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(display_startup_errors ?=).{0,10}$/\1 On/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(post_max_size ?=).{0,10}$/\1 100M/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(upload_max_filesize ?=).{0,10}$/\1 100M/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(pdo_mysql\.default_socket ?=).{0,10}$/\1 \/tmp\/mysql.sock/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(mysqli\.default_socket ?=).{0,10}$/\1 \/tmp\/mysql.sock/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(opcache\.enable ?=).{0,10}$/\1 1/' /etc/php/7.4/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(opcache\.validate_timestamps ?=).{0,10}$/\1 1/' /etc/php/7.4/fpm/php.ini
+sudo editor /etc/php/7.0/fpm/pool.d/www.conf
 ```
 
-&nbsp;<br />
-Confira as alteracoes
+Edite os parametros abaixo para modificar a quantidade de instâncias, por exemplo:
+
 ```sh
-grep -wns '\(max_execution_time\|max_input_vars\|memory_limit\|display_errors\|display_startup_errors\|post_max_size\|upload_max_filesize\|default_socket\|opcache\.enable\|validate_timestamps\) *=' /etc/php/7.4/fpm/php.ini
+pm.max_children = 10
+pm.start_servers = 3
+pm.min_spare_servers = 2
+pm.max_spare_servers = 4
 ```
+
+
 
 &nbsp;<br />
 Reinicie e verifique o status do serviço
@@ -586,45 +609,10 @@ Caso o serviço esteja OK, você deverá ver uma mensagem assim:
 
 
 &nbsp;<br />
-Edite o arquivo de configuração do serviço e faça alterações em alguns parâmetros conforme mostrado:
-```sh
-sudo editor /etc/php/8.0/fpm/php.ini
-```
-```
-Linha 0409: max_execution_time = 3600
-Linha 0426: max_input_vars = 10000
-Linha 0430: memory_limit = 256M
-Linha 0503: display_errors = On
-Linha 0512: display_startup_errors = On
-Linha 0703: post_max_size = 100M
-Linha 0855: upload_max_filesize = 100M
-Linha 1065: pdo_mysql.default_socket = /tmp/mysql.sock
-Linha 1174: mysqli.default_socket = /tmp/mysql.sock
-Linha 1763: opcache.enable=1
-Linha 1789: opcache.validate_timestamps=1
-```
+O processo é análogo ao usado no PHP 7.4
 
-&nbsp;<br />
-Ou se preferir, apenas copie e cole os comandos abaixo:
-```sh
-sudo sed -i -E 's/^.{0,2}(max_execution_time ?=).{0,10}$/\1 3600/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(max_input_vars ?=).{0,10}$/\1 10000/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(memory_limit ?=).{0,10}$/\1 256M/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(display_errors ?=).{0,10}$/\1 On/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(display_startup_errors ?=).{0,10}$/\1 On/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(post_max_size ?=).{0,10}$/\1 100M/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(upload_max_filesize ?=).{0,10}$/\1 100M/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(pdo_mysql\.default_socket ?=).{0,10}$/\1 \/tmp\/mysql.sock/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(mysqli\.default_socket ?=).{0,10}$/\1 \/tmp\/mysql.sock/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(opcache\.enable ?=).{0,10}$/\1 1/' /etc/php/8.0/fpm/php.ini
-sudo sed -i -E 's/^.{0,2}(opcache\.validate_timestamps ?=).{0,10}$/\1 1/' /etc/php/8.0/fpm/php.ini
-```
+Execute o [mesmo script usado na configuração do PHP 7.4](#configurando-o-php-74) . Apenas altere: `phpIni=/etc/php/8.0/fpm/php.ini`
 
-&nbsp;<br />
-Confira as alteracoes
-```sh
-grep -wns '\(max_execution_time\|max_input_vars\|memory_limit\|display_errors\|display_startup_errors\|post_max_size\|upload_max_filesize\|default_socket\|opcache\.enable\|validate_timestamps\) *=' /etc/php/8.0/fpm/php.ini
-```
 
 &nbsp;<br />
 Reinicie e verifique o status do serviço
