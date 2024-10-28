@@ -1336,6 +1336,22 @@ Agora Teste o debugger com o PHP8.0 e a configuração estará completa.
 
 
 &nbsp;<br />
+## Utilizando o plugin Live Server com PHP
+
+O plugin "Live Server" do VSCODE cria um servidor local, permitindo que páginas web sejam recarregadas automaticamente quando um arquivo é salvo. No entanto, ele só funciona com páginas estáticas.
+
+Para fazer ele funcionar com PHP, é necessário instalar um plugin no navegador que converte o endereço do Live Server para o endereço do servidor de desenvolvimento PHP.
+
+O plugin se chama "Live Server Web Extension". Existem versões tanto para o Firefox quanto para o Chrome.
+
+Configure desta forma:
+
+![alt](img/chrome-live-server-web-extension.png)
+
+Pronto, o navegador estará sincronizado com seu projeto e fará o recarregamento da página toda vez que algum arquivo do projeto for modificado.
+
+
+&nbsp;<br />
 # lampconfig.sh
 
 
